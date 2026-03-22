@@ -19,7 +19,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.moneysnap.presentation.theme.PrimaryPink
@@ -29,7 +32,13 @@ val ChartGrey = Color(0xFFEEEEEE)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    viewModel: HomeViewModel = viewModel(
+        factory = HomeViewModel.provideFactory(LocalContext.current)
+    )
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -92,7 +101,7 @@ fun HomeScreen() {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "$4,250.00",
+                    text = uiState.totalBalance,
                     fontWeight = FontWeight.Bold,
                     fontSize = 36.sp,
                     color = MaterialTheme.colorScheme.onBackground
@@ -111,16 +120,16 @@ fun HomeScreen() {
                 BalanceCard(
                     modifier = Modifier.weight(1f),
                     title = "INCOME",
-                    amount = "$5,200.00",
-                    trend = "+12.5%",
+                    amount = uiState.income,
+                    trend = "+0.0%", // TODO: Add real trend logic if needed
                     icon = Icons.Default.ArrowDownward,
                     color = SuccessGreen
                 )
                 BalanceCard(
                     modifier = Modifier.weight(1f),
                     title = "EXPENSES",
-                    amount = "$950.00",
-                    trend = "-5.2%",
+                    amount = uiState.expenses,
+                    trend = "-0.0%", // TODO: Add real trend logic if needed
                     icon = Icons.Default.ArrowUpward,
                     color = PrimaryPink
                 )
@@ -129,12 +138,12 @@ fun HomeScreen() {
             Spacer(modifier = Modifier.height(32.dp))
 
             // Weekly Spending Chart
-            WeeklySpendingSection()
+            WeeklySpendingSection(uiState.weeklySpending)
 
             Spacer(modifier = Modifier.height(32.dp))
 
             // Recent Transactions
-            RecentTransactionsSection()
+            RecentTransactionsSection(uiState.recentTransactions)
             
             Spacer(modifier = Modifier.height(80.dp)) // Extra space for FAB and Bottom Nav
         }
@@ -192,7 +201,7 @@ fun BalanceCard(
 }
 
 @Composable
-fun WeeklySpendingSection() {
+fun WeeklySpendingSection(days: List<DailySpending>) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -212,11 +221,19 @@ fun WeeklySpendingSection() {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom
         ) {
-            val days = listOf("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
-            val heights = listOf(0.4f, 0.6f, 0.3f, 0.9f, 0.5f, 0.2f, 0.3f)
+            val fallbackDays = listOf(
+                DailySpending("MON", 0.4f, false),
+                DailySpending("TUE", 0.6f, false),
+                DailySpending("WED", 0.3f, false),
+                DailySpending("THU", 0.9f, true),
+                DailySpending("FRI", 0.5f, false),
+                DailySpending("SAT", 0.2f, false),
+                DailySpending("SUN", 0.3f, false)
+            )
+            val chartData = days.ifEmpty { fallbackDays }
             
-            days.forEachIndexed { index, day ->
-                val isHighlighted = day == "THU"
+            chartData.forEach { day ->
+                val isHighlighted = day.isToday
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Bottom,
@@ -225,7 +242,7 @@ fun WeeklySpendingSection() {
                     Canvas(modifier = Modifier
                         .width(32.dp)
                         .height(80.dp)) {
-                        val barHeight = size.height * heights[index]
+                        val barHeight = size.height * day.ratio
                         drawRoundRect(
                             color = if (isHighlighted) PrimaryPink else ChartGrey,
                             topLeft = Offset(0f, size.height - barHeight),
@@ -235,7 +252,7 @@ fun WeeklySpendingSection() {
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        day,
+                        day.dayOfWeek,
                         fontSize = 12.sp,
                         fontWeight = if (isHighlighted) FontWeight.Bold else FontWeight.Normal,
                         color = if (isHighlighted) PrimaryPink else Color.Gray
@@ -247,7 +264,7 @@ fun WeeklySpendingSection() {
 }
 
 @Composable
-fun RecentTransactionsSection() {
+fun RecentTransactionsSection(transactions: List<com.moneysnap.domain.model.Transaction>) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -259,38 +276,28 @@ fun RecentTransactionsSection() {
         }
         Spacer(modifier = Modifier.height(16.dp))
         
-        TransactionItem(
-            title = "Starbucks Coffee",
-            subtitle = "Today, 10:45 AM",
-            amount = "-$4.50",
-            icon = Icons.Default.LocalCafe,
-            iconTint = PrimaryPink,
-            isNegative = true
-        )
-        TransactionItem(
-            title = "Uber Ride",
-            subtitle = "Yesterday, 8:20 PM",
-            amount = "-$15.00",
-            icon = Icons.Default.DirectionsCar,
-            iconTint = Color(0xFF2196F3), // Blue
-            isNegative = true
-        )
-        TransactionItem(
-            title = "Salary Deposit",
-            subtitle = "2 days ago",
-            amount = "+$2,800.00",
-            icon = Icons.Default.AttachMoney,
-            iconTint = SuccessGreen,
-            isNegative = false
-        )
-        TransactionItem(
-            title = "Apple Store",
-            subtitle = "2 days ago",
-            amount = "-$129.00",
-            icon = Icons.Default.ShoppingBag,
-            iconTint = Color(0xFF9C27B0), // Purple
-            isNegative = true
-        )
+        if (transactions.isEmpty()) {
+            Text("No recent transactions", color = Color.Gray, modifier = Modifier.padding(vertical = 16.dp))
+        } else {
+            val formatter = java.text.NumberFormat.getCurrencyInstance(java.util.Locale.US)
+            transactions.forEach { tx ->
+                val isExpense = tx.type == com.moneysnap.domain.model.TransactionType.EXPENSE
+                val formattedAmount = formatter.format(tx.amount)
+                val displayAmount = if (isExpense) "-$formattedAmount" else "+$formattedAmount"
+                
+                // Formatter for date (simplified)
+                val dateStr = android.text.format.DateFormat.format("MMM dd, yyyy", java.util.Date(tx.date)).toString()
+                
+                TransactionItem(
+                    title = tx.note.ifBlank { "Transaction" },
+                    subtitle = dateStr,
+                    amount = displayAmount,
+                    icon = if (isExpense) Icons.Default.ShoppingCart else Icons.Default.AttachMoney,
+                    iconTint = if (isExpense) Color(0xFF2196F3) else SuccessGreen,
+                    isNegative = isExpense
+                )
+            }
+        }
     }
 }
 

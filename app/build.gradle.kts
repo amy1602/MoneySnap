@@ -79,6 +79,7 @@ dependencies {
     
     // ViewModel Compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
