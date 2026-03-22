@@ -1,0 +1,45 @@
+# Default ignored files
+/shelf/
+/.idea/workspace.xml
+# Ignore all build directories
+build/
+app/build/
+**/build/
+gitignore
+# Gradle files
+.gradle/
+
+# Local configuration (Contains your unique SDK path - MUST IGNORE)
+local.properties
+
+# IDE Settings (Android Studio specific files)
+.idea/workspace.xml
+.idea/libraries
+.idea/caches
+*.iml
+
+# Key files (Never commit your signing keys!)
+*.jks
+*.keystore
+
+# Log files
+*.log
+
+# Captures (CPU/Memory profiles)
+captures/
+
+# Android Studio / IntelliJ internal settings
+.idea/deploymentTargetSelector.xml
+.idea/compiler.xml
+.idea/AndroidProjectSystem.xml
+.idea/caches/
+.idea/modules.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+# Firebase / Google Services configuration
+google-services.json
+.idea/runConfigurations/
+.idea/runConfigurations.xml
+/compiler.xml
+/deploymentTargetSelector.xml
+/caches/deviceStreaming.xml
