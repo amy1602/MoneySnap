@@ -78,7 +78,6 @@ fun LoginScreen(viewModel: AuthViewModel, onRegisterClick: () -> Unit, onLoginSu
     val credentialManager = remember { CredentialManager.create(context) }
     LaunchedEffect(authState) {
         if (authState?.isSuccess == true) {
-            Toast.makeText(context, "Login successfully", Toast.LENGTH_SHORT).show()
             onLoginSuccess()
         } else if (authState?.isFailure == true) {
             Toast.makeText(context, authState?.exceptionOrNull()?.message ?: "Login failed", Toast.LENGTH_SHORT).show()

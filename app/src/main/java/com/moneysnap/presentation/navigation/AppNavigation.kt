@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import com.moneysnap.presentation.auth.AuthViewModel
 import com.moneysnap.presentation.auth.LoginScreen
 import com.moneysnap.presentation.auth.RegisterScreen
+import com.moneysnap.presentation.home.HomeScreen
 import com.moneysnap.presentation.splash.SplashScreen
 
 @Composable
@@ -18,7 +19,8 @@ fun AppNavigation() {
     NavHost(navController = navController, startDestination = "splash") {
         composable("splash") {
             SplashScreen(onNavigateToNext = {
-                navController.navigate("login") {
+                val destination = if (authViewModel.isLoggedIn) "home" else "login"
+                navController.navigate(destination) {
                     popUpTo("splash") { inclusive = true }
                 }
             })
@@ -27,15 +29,26 @@ fun AppNavigation() {
             LoginScreen(
                 viewModel = authViewModel,
                 onRegisterClick = { navController.navigate("register") },
-                onLoginSuccess = { /* Navigate to Home */ }
+                onLoginSuccess = { 
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
             )
         }
         composable("register") {
             RegisterScreen(
                 viewModel = authViewModel,
                 onLoginClick = { navController.popBackStack() },
-                onRegisterSuccess = { /* Navigate to Home */ }
+                onRegisterSuccess = { 
+                    navController.navigate("home") {
+                        popUpTo("register") { inclusive = true }
+                    }
+                }
             )
+        }
+        composable("home") {
+            HomeScreen()
         }
     }
 }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.moneysnap.domain.repository.AuthRepository
 import com.moneysnap.data.repository.AuthRepositoryImpl
+import com.moneysnap.domain.usecase.CheckUserLoggedInUseCase
 import com.moneysnap.domain.usecase.GoogleLoginUseCase
 import com.moneysnap.domain.usecase.LoginUseCase
 import com.moneysnap.domain.usecase.RegisterUseCase
@@ -14,8 +15,12 @@ import kotlinx.coroutines.launch
 class AuthViewModel(
     private val loginUseCase: LoginUseCase = LoginUseCase(AuthRepositoryImpl()),
     private val registerUseCase: RegisterUseCase = RegisterUseCase(AuthRepositoryImpl()),
-    private val googleLoginUseCase: GoogleLoginUseCase = GoogleLoginUseCase(AuthRepositoryImpl())
+    private val googleLoginUseCase: GoogleLoginUseCase = GoogleLoginUseCase(AuthRepositoryImpl()),
+    private val checkUserLoggedInUseCase: CheckUserLoggedInUseCase = CheckUserLoggedInUseCase(AuthRepositoryImpl())
 ) : ViewModel() {
+
+    val isLoggedIn: Boolean
+        get() = checkUserLoggedInUseCase()
 
     private val _authState = MutableStateFlow<Result<String>?>(null)
     val authState = _authState.asStateFlow()

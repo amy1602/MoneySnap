@@ -22,4 +22,10 @@ interface AuthRepository {
      * @return A Result containing the user ID on success, or an Exception on failure.
      */
     suspend fun loginWithGoogle(idToken: String): Result<String>
+
+    /**
+     * Checks if a user is currently logged in.
+     * @return True if a user session exists, false otherwise.
+     */
+    fun isUserLoggedIn(): Boolean
 }

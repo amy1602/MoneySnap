@@ -40,7 +40,6 @@ fun RegisterScreen(viewModel: AuthViewModel, onLoginClick: () -> Unit, onRegiste
     val credentialManager = remember { CredentialManager.create(context) }
     LaunchedEffect(authState) {
         if (authState?.isSuccess == true) {
-            Toast.makeText(context, "Registered successfully", Toast.LENGTH_SHORT).show()
             onRegisterSuccess()
         } else if (authState?.isFailure == true) {
             Toast.makeText(context, authState?.exceptionOrNull()?.message ?: "Registration failed", Toast.LENGTH_SHORT).show()

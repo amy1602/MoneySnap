@@ -40,4 +40,8 @@ class AuthRepositoryImpl(
             Result.failure(e)
         }
     }
+
+    override fun isUserLoggedIn(): Boolean {
+        return auth.currentUser != null
+    }
 }
