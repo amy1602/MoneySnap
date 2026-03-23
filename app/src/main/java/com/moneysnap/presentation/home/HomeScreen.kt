@@ -26,6 +26,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.moneysnap.presentation.theme.PrimaryPink
+import com.moneysnap.presentation.transaction.AddTransactionScreen
 
 val SuccessGreen = Color(0xFF4CAF50)
 val ChartGrey = Color(0xFFEEEEEE)
@@ -38,6 +39,27 @@ fun HomeScreen(
     )
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showBottomSheet by remember { mutableStateOf(false) }
+
+    if (showBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showBottomSheet = false },
+            sheetState = sheetState,
+            dragHandle = null,
+            containerColor = Color.Transparent,
+            scrimColor = Color.Black.copy(alpha = 0.32f),
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+        ) {
+            AddTransactionScreen(
+                onCloseClick = { showBottomSheet = false },
+                onSaveSuccess = { 
+                    showBottomSheet = false
+                    viewModel.refresh() // Refresh home data after save
+                }
+            )
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -67,7 +89,7 @@ fun HomeScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* TODO: Add transaction */ },
+                onClick = { showBottomSheet = true },
                 containerColor = PrimaryPink,
                 contentColor = Color.White,
                 shape = CircleShape

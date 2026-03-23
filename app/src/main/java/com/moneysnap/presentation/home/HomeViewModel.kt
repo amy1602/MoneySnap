@@ -56,6 +56,10 @@ class HomeViewModel(
 
     init {
         // Trigger initial sync
+        refresh()
+    }
+
+    fun refresh() {
         viewModelScope.launch {
             userStatsRepository.syncUserStats()
             transactionRepository.syncTransactions()
