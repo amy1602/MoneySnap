@@ -28,4 +28,9 @@ interface AuthRepository {
      * @return True if a user session exists, false otherwise.
      */
     fun isUserLoggedIn(): Boolean
+
+    /**
+     * Logs out the current user.
+     */
+    fun logout()
 }

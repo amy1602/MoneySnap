@@ -44,4 +44,8 @@ class AuthRepositoryImpl(
     override fun isUserLoggedIn(): Boolean {
         return auth.currentUser != null
     }
+
+    override fun logout() {
+        auth.signOut()
+    }
 }

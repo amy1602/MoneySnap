@@ -27,6 +27,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.moneysnap.presentation.theme.PrimaryPink
 import com.moneysnap.presentation.transaction.AddTransactionScreen
+import com.moneysnap.presentation.profile.ProfileScreen
+
+enum class HomeTab { Home, History, Reports, Profile }
 
 val SuccessGreen = Color(0xFF4CAF50)
 val ChartGrey = Color(0xFFEEEEEE)
@@ -36,11 +39,14 @@ val ChartGrey = Color(0xFFEEEEEE)
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(
         factory = HomeViewModel.provideFactory(LocalContext.current)
-    )
+    ),
+    onNavigateToCategories: () -> Unit = {},
+    onLogout: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by remember { mutableStateOf(false) }
+    var currentTab by remember { mutableStateOf(HomeTab.Home) }
 
     if (showBottomSheet) {
         ModalBottomSheet(
@@ -63,29 +69,31 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Money Manager",
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            if (currentTab != HomeTab.Profile) {
+                TopAppBar(
+                    title = {
+                        Text(
+                            "Money Manager",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { /* TODO */ }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { /* TODO */ }) {
+                            Icon(Icons.Default.Notifications, contentDescription = "Notifications")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notifications")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
                 )
-            )
+            }
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -99,76 +107,90 @@ fun HomeScreen(
         },
         floatingActionButtonPosition = FabPosition.Center,
         bottomBar = {
-            HomeBottomNavigation()
+            HomeBottomNavigation(
+                selectedTab = currentTab,
+                onTabSelected = { currentTab = it }
+            )
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Total Balance
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Total Balance",
-                    color = Color.Gray,
-                    fontSize = 14.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = uiState.totalBalance,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 36.sp,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
+        Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+            when (currentTab) {
+                HomeTab.Home -> HomeContent(uiState)
+                HomeTab.History -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("History Content") }
+                HomeTab.Reports -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Reports Content") }
+                HomeTab.Profile -> ProfileScreen(onNavigateToCategories = onNavigateToCategories, onLogout = onLogout)
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Income and Expenses Row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                BalanceCard(
-                    modifier = Modifier.weight(1f),
-                    title = "INCOME",
-                    amount = uiState.income,
-                    trend = "+0.0%", // TODO: Add real trend logic if needed
-                    icon = Icons.Default.ArrowDownward,
-                    color = SuccessGreen
-                )
-                BalanceCard(
-                    modifier = Modifier.weight(1f),
-                    title = "EXPENSES",
-                    amount = uiState.expenses,
-                    trend = "-0.0%", // TODO: Add real trend logic if needed
-                    icon = Icons.Default.ArrowUpward,
-                    color = PrimaryPink
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Weekly Spending Chart
-            WeeklySpendingSection(uiState.weeklySpending)
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Recent Transactions
-            RecentTransactionsSection(uiState.recentTransactions)
-            
-            Spacer(modifier = Modifier.height(80.dp)) // Extra space for FAB and Bottom Nav
         }
+    }
+}
+
+@Composable
+fun HomeContent(uiState: HomeUiState) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Total Balance
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Total Balance",
+                color = Color.Gray,
+                fontSize = 14.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = uiState.totalBalance,
+                fontWeight = FontWeight.Bold,
+                fontSize = 36.sp,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Income and Expenses Row
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            BalanceCard(
+                modifier = Modifier.weight(1f),
+                title = "INCOME",
+                amount = uiState.income,
+                trend = "+0.0%", // TODO: Add real trend logic if needed
+                icon = Icons.Default.ArrowDownward,
+                color = SuccessGreen
+            )
+            BalanceCard(
+                modifier = Modifier.weight(1f),
+                title = "EXPENSES",
+                amount = uiState.expenses,
+                trend = "-0.0%", // TODO: Add real trend logic if needed
+                icon = Icons.Default.ArrowUpward,
+                color = PrimaryPink
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Weekly Spending Chart
+        WeeklySpendingSection(uiState.weeklySpending)
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Recent Transactions
+        RecentTransactionsSection(uiState.recentTransactions)
+        
+        Spacer(modifier = Modifier.height(80.dp)) // Extra space for FAB and Bottom Nav
     }
 }
 
@@ -363,14 +385,17 @@ fun TransactionItem(
 }
 
 @Composable
-fun HomeBottomNavigation() {
+fun HomeBottomNavigation(
+    selectedTab: HomeTab = HomeTab.Home,
+    onTabSelected: (HomeTab) -> Unit = {}
+) {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = 8.dp
     ) {
         NavigationBarItem(
-            selected = true,
-            onClick = { },
+            selected = selectedTab == HomeTab.Home,
+            onClick = { onTabSelected(HomeTab.Home) },
             icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
             label = { Text("Home", fontSize = 10.sp) },
             colors = NavigationBarItemDefaults.colors(
@@ -380,22 +405,37 @@ fun HomeBottomNavigation() {
             )
         )
         NavigationBarItem(
-            selected = false,
-            onClick = { },
+            selected = selectedTab == HomeTab.History,
+            onClick = { onTabSelected(HomeTab.History) },
             icon = { Icon(Icons.Default.History, contentDescription = "History") },
-            label = { Text("History", fontSize = 10.sp) }
+            label = { Text("History", fontSize = 10.sp) },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = PrimaryPink,
+                selectedTextColor = PrimaryPink,
+                indicatorColor = PrimaryPink.copy(alpha = 0.1f)
+            )
         )
         NavigationBarItem(
-            selected = false,
-            onClick = { },
+            selected = selectedTab == HomeTab.Reports,
+            onClick = { onTabSelected(HomeTab.Reports) },
             icon = { Icon(Icons.Default.BarChart, contentDescription = "Reports") },
-            label = { Text("Reports", fontSize = 10.sp) }
+            label = { Text("Reports", fontSize = 10.sp) },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = PrimaryPink,
+                selectedTextColor = PrimaryPink,
+                indicatorColor = PrimaryPink.copy(alpha = 0.1f)
+            )
         )
         NavigationBarItem(
-            selected = false,
-            onClick = { },
+            selected = selectedTab == HomeTab.Profile,
+            onClick = { onTabSelected(HomeTab.Profile) },
             icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-            label = { Text("Profile", fontSize = 10.sp) }
+            label = { Text("Profile", fontSize = 10.sp) },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = PrimaryPink,
+                selectedTextColor = PrimaryPink,
+                indicatorColor = PrimaryPink.copy(alpha = 0.1f)
+            )
         )
     }
 }
