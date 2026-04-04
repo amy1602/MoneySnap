@@ -2,6 +2,8 @@ package com.moneysnap.presentation.home
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -14,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -95,21 +98,11 @@ fun HomeScreen(
                 )
             }
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showBottomSheet = true },
-                containerColor = PrimaryPink,
-                contentColor = Color.White,
-                shape = CircleShape
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Transaction")
-            }
-        },
-        floatingActionButtonPosition = FabPosition.Center,
         bottomBar = {
             HomeBottomNavigation(
                 selectedTab = currentTab,
-                onTabSelected = { currentTab = it }
+                onTabSelected = { currentTab = it },
+                onAddClick = { showBottomSheet = true }
             )
         }
     ) { paddingValues ->
@@ -387,55 +380,122 @@ fun TransactionItem(
 @Composable
 fun HomeBottomNavigation(
     selectedTab: HomeTab = HomeTab.Home,
-    onTabSelected: (HomeTab) -> Unit = {}
+    onTabSelected: (HomeTab) -> Unit = {},
+    onAddClick: () -> Unit = {}
 ) {
-    NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surface,
-        tonalElevation = 8.dp
+    Box(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        NavigationBarItem(
-            selected = selectedTab == HomeTab.Home,
-            onClick = { onTabSelected(HomeTab.Home) },
-            icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-            label = { Text("Home", fontSize = 10.sp) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = PrimaryPink,
-                selectedTextColor = PrimaryPink,
-                indicatorColor = PrimaryPink.copy(alpha = 0.1f)
+        // The actual navigation bar surface
+        Surface(
+            modifier = Modifier.align(Alignment.BottomCenter),
+            color = Color.White,
+            tonalElevation = 0.dp,
+            shadowElevation = 8.dp
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .background(Color.White)
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Home
+                BottomNavItem(
+                    icon = Icons.Default.Home,
+                    label = "Home",
+                    selected = selectedTab == HomeTab.Home,
+                    onClick = { onTabSelected(HomeTab.Home) },
+                    modifier = Modifier.weight(1f)
+                )
+                // History
+                BottomNavItem(
+                    icon = Icons.Default.History,
+                    label = "History",
+                    selected = selectedTab == HomeTab.History,
+                    onClick = { onTabSelected(HomeTab.History) },
+                    modifier = Modifier.weight(1f)
+                )
+                // Center spacer for the raised FAB
+                Spacer(modifier = Modifier.weight(1f))
+                // Reports
+                BottomNavItem(
+                    icon = Icons.Default.BarChart,
+                    label = "Reports",
+                    selected = selectedTab == HomeTab.Reports,
+                    onClick = { onTabSelected(HomeTab.Reports) },
+                    modifier = Modifier.weight(1f)
+                )
+                // Profile
+                BottomNavItem(
+                    icon = Icons.Default.Person,
+                    label = "Profile",
+                    selected = selectedTab == HomeTab.Profile,
+                    onClick = { onTabSelected(HomeTab.Profile) },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+
+        // Raised center "+" button protruding above the bar
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .offset(y = (-20).dp)
+                // Layer 1: Pink shadow using native colored shadow
+                .shadow(
+                    elevation = 12.dp,
+                    shape = CircleShape,
+                    ambientColor = PrimaryPink,
+                    spotColor = PrimaryPink
+                )
+                // Layer 2: Outer white border ring
+                .background(Color.White, CircleShape)
+                .size(62.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            // Layer 3: Pink button inside the border
+            FloatingActionButton(
+                onClick = onAddClick,
+                containerColor = PrimaryPink,
+                contentColor = Color.White,
+                shape = CircleShape,
+                modifier = Modifier.size(52.dp),
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 0.dp,
+                    pressedElevation = 0.dp
+                )
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Transaction", modifier = Modifier.size(28.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun BottomNavItem(
+    icon: ImageVector,
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val color = if (selected) PrimaryPink else Color.Gray
+    Column(
+        modifier = modifier
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
             )
-        )
-        NavigationBarItem(
-            selected = selectedTab == HomeTab.History,
-            onClick = { onTabSelected(HomeTab.History) },
-            icon = { Icon(Icons.Default.History, contentDescription = "History") },
-            label = { Text("History", fontSize = 10.sp) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = PrimaryPink,
-                selectedTextColor = PrimaryPink,
-                indicatorColor = PrimaryPink.copy(alpha = 0.1f)
-            )
-        )
-        NavigationBarItem(
-            selected = selectedTab == HomeTab.Reports,
-            onClick = { onTabSelected(HomeTab.Reports) },
-            icon = { Icon(Icons.Default.BarChart, contentDescription = "Reports") },
-            label = { Text("Reports", fontSize = 10.sp) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = PrimaryPink,
-                selectedTextColor = PrimaryPink,
-                indicatorColor = PrimaryPink.copy(alpha = 0.1f)
-            )
-        )
-        NavigationBarItem(
-            selected = selectedTab == HomeTab.Profile,
-            onClick = { onTabSelected(HomeTab.Profile) },
-            icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-            label = { Text("Profile", fontSize = 10.sp) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = PrimaryPink,
-                selectedTextColor = PrimaryPink,
-                indicatorColor = PrimaryPink.copy(alpha = 0.1f)
-            )
-        )
+            .padding(vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(icon, contentDescription = label, tint = color, modifier = Modifier.size(24.dp))
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(label, fontSize = 10.sp, color = color, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
     }
 }
