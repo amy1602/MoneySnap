@@ -15,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -29,6 +30,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.moneysnap.domain.model.Category
+import com.moneysnap.domain.model.CategoryConstants
 import com.moneysnap.domain.model.TransactionType
 import com.moneysnap.presentation.theme.PrimaryPink
 import java.text.SimpleDateFormat
@@ -63,8 +66,10 @@ fun AddTransactionScreen(
     )
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val categories by viewModel.categories.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
     val context = LocalContext.current
+    var showCategoryPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(viewModel.toastMessage) {
         viewModel.toastMessage.collect { message ->
@@ -78,13 +83,14 @@ fun AddTransactionScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-            .padding(horizontal = 24.dp)
-            .verticalScroll(scrollState)
-    ) {
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                .padding(horizontal = 24.dp)
+                .verticalScroll(scrollState)
+        ) {
         // Handlebar
         Box(
             modifier = Modifier
@@ -178,7 +184,7 @@ fun AddTransactionScreen(
         ModalInputField(
             icon = Icons.Default.Category,
             placeholder = state.categoryName,
-            onClick = { /* Placeholder for Category Selection */ }
+            onClick = { showCategoryPicker = true }
         )
         
         Spacer(modifier = Modifier.height(16.dp))
@@ -245,6 +251,107 @@ fun AddTransactionScreen(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        if (showCategoryPicker) {
+            CategoryPicker(
+                categories = categories,
+                onCategorySelected = { category ->
+                    viewModel.onCategorySelect(category.id, category.name)
+                    showCategoryPicker = false
+                },
+                onDismiss = { showCategoryPicker = false }
+            )
+        }
+    }
+}
+
+@Composable
+fun CategoryPicker(
+    categories: List<Category>,
+    onCategorySelected: (Category) -> Unit,
+    onDismiss: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.White,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Select Category",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.Gray)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            if (categories.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No categories found", color = Color.Gray)
+                }
+            } else {
+                androidx.compose.foundation.lazy.LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(categories.size) { index ->
+                        val category = categories[index]
+                        val parsedColor = try {
+                            Color(android.graphics.Color.parseColor(if (category.color.startsWith("#")) category.color else "#${category.color}"))
+                        } catch (e: Exception) {
+                            PrimaryPink
+                        }
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color(0xFFF8F8F8))
+                                .clickable { onCategorySelected(category) }
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(parsedColor.copy(alpha = 0.15f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = CategoryConstants.getIconByName(category.icon),
+                                    contentDescription = null,
+                                    tint = parsedColor,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = category.name,
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

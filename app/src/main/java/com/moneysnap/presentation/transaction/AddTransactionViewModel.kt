@@ -6,15 +6,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.moneysnap.data.local.MoneyDatabase
 import com.moneysnap.data.remote.FirestoreService
+import com.moneysnap.data.repository.CategoryRepositoryImpl
 import com.moneysnap.data.repository.TransactionRepositoryImpl
+import com.moneysnap.domain.model.Category
 import com.moneysnap.domain.model.Transaction
 import com.moneysnap.domain.model.TransactionType
+import com.moneysnap.domain.repository.CategoryRepository
 import com.moneysnap.domain.repository.TransactionRepository
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -30,8 +29,10 @@ data class AddTransactionState(
     val error: String? = null
 )
 
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class AddTransactionViewModel(
-    private val transactionRepository: TransactionRepository
+    private val transactionRepository: TransactionRepository,
+    private val categoryRepository: CategoryRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AddTransactionState())
@@ -39,6 +40,19 @@ class AddTransactionViewModel(
 
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()
+
+    val categories: StateFlow<List<Category>> = _state
+        .map { it.type }
+        .distinctUntilChanged()
+        .flatMapLatest { type ->
+            categoryRepository.getCategories().map { all ->
+                all.filter { it.type == type && !it.isDeleted }
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     fun onAmountChange(newAmount: String) {
         var processed = newAmount
@@ -61,7 +75,7 @@ class AddTransactionViewModel(
     }
 
     fun onTypeChange(newType: TransactionType) {
-        _state.update { it.copy(type = newType) }
+        _state.update { it.copy(type = newType, categoryId = null, categoryName = "Select category") }
     }
 
     fun onDateChange(newDate: Long) {
@@ -115,8 +129,10 @@ class AddTransactionViewModel(
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 val db = MoneyDatabase.getDatabase(context)
-                val repository = TransactionRepositoryImpl(db.transactionDao(), FirestoreService())
-                return AddTransactionViewModel(repository) as T
+                val firestoreService = FirestoreService()
+                val transactionRepo = TransactionRepositoryImpl(db.transactionDao(), firestoreService)
+                val categoryRepo = CategoryRepositoryImpl(db.categoryDao(), firestoreService)
+                return AddTransactionViewModel(transactionRepo, categoryRepo) as T
             }
         }
     }
