@@ -2,9 +2,11 @@ package com.moneysnap.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.moneysnap.presentation.auth.AuthViewModel
 import com.moneysnap.presentation.auth.LoginScreen
 import com.moneysnap.presentation.auth.RegisterScreen
@@ -62,11 +64,25 @@ fun AppNavigation() {
         composable("categories") {
             CategoriesScreen(
                 onBackClick = { navController.popBackStack() },
-                onAddCategoryClick = { navController.navigate("add_category") }
+                onAddCategoryClick = { navController.navigate("add_category") },
+                onEditCategoryClick = { categoryId -> 
+                    navController.navigate("add_category?categoryId=$categoryId")
+                }
             )
         }
-        composable("add_category") {
+        composable(
+            route = "add_category?categoryId={categoryId}",
+            arguments = listOf(
+                navArgument("categoryId") { 
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ) { backStackEntry ->
+            val categoryId = backStackEntry.arguments?.getString("categoryId")
             AddCategoryScreen(
+                categoryId = categoryId,
                 onBackClick = { navController.popBackStack() },
                 onSaveSuccess = { navController.popBackStack() }
             )

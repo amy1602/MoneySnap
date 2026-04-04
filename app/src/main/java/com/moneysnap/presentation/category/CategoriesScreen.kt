@@ -9,17 +9,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -37,9 +34,12 @@ fun CategoriesScreen(
         factory = CategoriesViewModel.provideFactory(LocalContext.current)
     ),
     onBackClick: () -> Unit,
-    onAddCategoryClick: () -> Unit
+    onAddCategoryClick: () -> Unit,
+    onEditCategoryClick: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var categoryToDelete by remember { mutableStateOf<Category?>(null) }
 
     Scaffold(
         topBar = {
@@ -87,10 +87,18 @@ fun CategoriesScreen(
                     item {
                         CategorySectionHeader("EXPENSE CATEGORIES")
                     }
-                    items(uiState.expenseCategories) { category ->
-                        CategoryItem(category) {
-                            // TODO: Navigate to category detail/edit if needed
-                        }
+                    items(
+                        items = uiState.expenseCategories,
+                        key = { it.id }
+                    ) { category ->
+                        SwipeableCategoryItem(
+                            category = category,
+                            onEdit = { onEditCategoryClick(category.id) },
+                            onDelete = { 
+                                categoryToDelete = category
+                                showDeleteDialog = true
+                            }
+                        )
                     }
                 }
 
@@ -99,10 +107,18 @@ fun CategoriesScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         CategorySectionHeader("INCOME CATEGORIES")
                     }
-                    items(uiState.incomeCategories) { category ->
-                        CategoryItem(category) {
-                            // TODO: Navigate to category detail/edit if needed
-                        }
+                    items(
+                        items = uiState.incomeCategories,
+                        key = { it.id }
+                    ) { category ->
+                        SwipeableCategoryItem(
+                            category = category,
+                            onEdit = { onEditCategoryClick(category.id) },
+                            onDelete = { 
+                                categoryToDelete = category
+                                showDeleteDialog = true
+                            }
+                        )
                     }
                 }
                 
@@ -118,6 +134,97 @@ fun CategoriesScreen(
                 }
             }
         }
+
+        if (showDeleteDialog && categoryToDelete != null) {
+            AlertDialog(
+                onDismissRequest = { 
+                    showDeleteDialog = false
+                    categoryToDelete = null
+                },
+                title = { Text("Delete Category") },
+                text = { Text("Are you sure you want to delete \"${categoryToDelete?.name}\"? This action cannot be undone.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            categoryToDelete?.let { viewModel.deleteCategory(it.id) }
+                            showDeleteDialog = false
+                            categoryToDelete = null
+                        },
+                        colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
+                    ) {
+                        Text("Delete")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { 
+                        showDeleteDialog = false
+                        categoryToDelete = null
+                    }) {
+                        Text("Cancel")
+                    }
+                },
+                shape = RoundedCornerShape(24.dp),
+                containerColor = Color.White
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SwipeableCategoryItem(
+    category: Category,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            when (value) {
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    onEdit()
+                    false // Don't dismiss, just navigate
+                }
+                SwipeToDismissBoxValue.EndToStart -> {
+                    onDelete()
+                    false // Don't dismiss yet, wait for dialog
+                }
+                else -> false
+            }
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = {
+            val direction = dismissState.dismissDirection
+            val color = when (direction) {
+                SwipeToDismissBoxValue.StartToEnd -> Color(0xFF4CAF50) // Green for edit
+                SwipeToDismissBoxValue.EndToStart -> Color(0xFFF44336) // Red for delete
+                else -> Color.Transparent
+            }
+            val alignment = when (direction) {
+                SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+                SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
+                else -> Alignment.Center
+            }
+            val icon = when (direction) {
+                SwipeToDismissBoxValue.StartToEnd -> Icons.Default.Edit
+                SwipeToDismissBoxValue.EndToStart -> Icons.Default.Delete
+                else -> null
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color)
+                    .padding(horizontal = 24.dp),
+                contentAlignment = alignment
+            ) {
+                icon?.let { Icon(it, contentDescription = null, tint = Color.White) }
+            }
+        }
+    ) {
+        CategoryItem(category = category, onClick = onEdit)
     }
 }
 

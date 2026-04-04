@@ -6,11 +6,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.moneysnap.data.local.MoneyDatabase
 import com.moneysnap.data.remote.FirestoreService
+import com.moneysnap.data.repository.CategoryRepositoryImpl
 import com.moneysnap.data.repository.TransactionRepositoryImpl
 import com.moneysnap.data.repository.UserStatsRepositoryImpl
 import com.moneysnap.domain.model.Transaction
 import com.moneysnap.domain.model.TransactionType
 import com.moneysnap.domain.model.UserStats
+import com.moneysnap.domain.repository.CategoryRepository
 import com.moneysnap.domain.repository.TransactionRepository
 import com.moneysnap.domain.repository.UserStatsRepository
 import kotlinx.coroutines.flow.SharingStarted
@@ -38,7 +40,8 @@ data class HomeUiState(
 
 class HomeViewModel(
     private val transactionRepository: TransactionRepository,
-    private val userStatsRepository: UserStatsRepository
+    private val userStatsRepository: UserStatsRepository,
+    private val categoryRepository: CategoryRepository
 ) : ViewModel() {
 
     private val currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US)
@@ -63,6 +66,7 @@ class HomeViewModel(
         viewModelScope.launch {
             userStatsRepository.syncUserStats()
             transactionRepository.syncTransactions()
+            categoryRepository.syncCategories()
         }
     }
 
@@ -144,9 +148,14 @@ class HomeViewModel(
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 val db = MoneyDatabase.getDatabase(context)
                 val firestoreService = FirestoreService()
+                val transactionRepo = TransactionRepositoryImpl(db.transactionDao(), firestoreService)
+                val userStatsRepo = UserStatsRepositoryImpl(db.userStatsDao(), firestoreService)
+                val categoryRepo = CategoryRepositoryImpl(db.categoryDao(), firestoreService)
+                
                 return HomeViewModel(
-                    TransactionRepositoryImpl(db.transactionDao(), firestoreService),
-                    UserStatsRepositoryImpl(db.userStatsDao(), firestoreService)
+                    transactionRepo,
+                    userStatsRepo,
+                    categoryRepo
                 ) as T
             }
         }

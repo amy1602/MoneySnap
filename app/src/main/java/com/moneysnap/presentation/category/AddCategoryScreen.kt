@@ -34,6 +34,7 @@ import com.moneysnap.presentation.theme.PrimaryPink
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddCategoryScreen(
+    categoryId: String? = null,
     onBackClick: () -> Unit,
     onSaveSuccess: () -> Unit,
     viewModel: AddCategoryViewModel = viewModel(
@@ -43,6 +44,10 @@ fun AddCategoryScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scrollState = rememberScrollState()
+
+    LaunchedEffect(categoryId) {
+        categoryId?.let { viewModel.loadCategory(it) }
+    }
 
     LaunchedEffect(state.saveSuccess) {
         if (state.saveSuccess) {
@@ -61,7 +66,7 @@ fun AddCategoryScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Add Category",
+                        if (categoryId == null) "Add Category" else "Edit Category",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center
@@ -226,7 +231,11 @@ fun AddCategoryScreen(
                 if (state.isSaving) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
-                    Text("Save Category", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        if (categoryId == null) "Save Category" else "Update Category",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 

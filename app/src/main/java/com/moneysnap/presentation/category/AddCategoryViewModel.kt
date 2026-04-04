@@ -25,7 +25,8 @@ data class AddCategoryState(
     val colorHex: String = CategoryConstants.DEFAULT_COLORS.first(),
     val isSaving: Boolean = false,
     val saveSuccess: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val existingCategory: Category? = null
 )
 
 class AddCategoryViewModel(
@@ -34,6 +35,23 @@ class AddCategoryViewModel(
 
     private val _state = MutableStateFlow(AddCategoryState())
     val state: StateFlow<AddCategoryState> = _state.asStateFlow()
+
+    fun loadCategory(categoryId: String) {
+        viewModelScope.launch {
+            val category = categoryRepository.getCategoryById(categoryId)
+            if (category != null) {
+                _state.update {
+                    it.copy(
+                        name = category.name,
+                        type = category.type,
+                        iconName = category.icon,
+                        colorHex = category.color,
+                        existingCategory = category
+                    )
+                }
+            }
+        }
+    }
 
     fun onNameChange(newName: String) {
         _state.update { it.copy(name = newName, errorMessage = null) }
@@ -61,15 +79,18 @@ class AddCategoryViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isSaving = true) }
             try {
-                val newCategory = Category(
-                    id = UUID.randomUUID().toString(),
+                val existing = currentState.existingCategory
+                val categoryToSave = Category(
+                    id = existing?.id ?: UUID.randomUUID().toString(),
                     name = currentState.name,
                     type = currentState.type,
                     icon = currentState.iconName,
                     color = currentState.colorHex,
+                    userId = existing?.userId ?: "",
+                    isDeleted = existing?.isDeleted ?: false,
                     updatedAt = System.currentTimeMillis()
                 )
-                categoryRepository.saveCategory(newCategory)
+                categoryRepository.saveCategory(categoryToSave)
                 _state.update { it.copy(isSaving = false, saveSuccess = true) }
             } catch (e: Exception) {
                 _state.update { it.copy(isSaving = false, errorMessage = "Failed to save category: ${e.message}") }

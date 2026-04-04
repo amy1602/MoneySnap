@@ -30,6 +30,7 @@ class CategoriesViewModel(
     init {
         viewModelScope.launch {
             categoryRepository.seedDefaultCategories()
+            categoryRepository.syncCategories()
         }
     }
 
@@ -44,6 +45,12 @@ class CategoriesViewModel(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = CategoriesUiState(isLoading = true)
     )
+
+    fun deleteCategory(categoryId: String) {
+        viewModelScope.launch {
+            categoryRepository.deleteCategory(categoryId)
+        }
+    }
 
     companion object {
         fun provideFactory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
