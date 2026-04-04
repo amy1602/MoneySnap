@@ -71,16 +71,18 @@ class HomeViewModel(
     }
 
     private fun mapToUiState(stats: UserStats?, transactions: List<Transaction>): HomeUiState {
-        val safeStats = stats ?: UserStats(userId = "")
+        val incomeValue = transactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
+        val expenseValue = transactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+        val balanceValue = incomeValue - expenseValue
 
         val recentTxs = transactions.sortedByDescending { it.date }.take(5)
 
         val weekly = calculateWeeklySpending(transactions)
 
         return HomeUiState(
-            totalBalance = currencyFormatter.format(safeStats.totalBalance),
-            income = currencyFormatter.format(safeStats.totalIncome),
-            expenses = currencyFormatter.format(safeStats.totalExpense),
+            totalBalance = currencyFormatter.format(balanceValue),
+            income = currencyFormatter.format(incomeValue),
+            expenses = currencyFormatter.format(expenseValue),
             recentTransactions = recentTxs,
             weeklySpending = weekly
         )
