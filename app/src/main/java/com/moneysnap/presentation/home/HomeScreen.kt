@@ -46,6 +46,7 @@ fun HomeScreen(
         factory = HomeViewModel.provideFactory(LocalContext.current)
     ),
     onNavigateToCategories: () -> Unit = {},
+    onNavigateToTransaction: (String) -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -119,12 +120,13 @@ fun HomeScreen(
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
             when (currentTab) {
-                HomeTab.Home -> HomeContent(uiState)
+                HomeTab.Home -> HomeContent(uiState, onNavigateToTransaction)
                 HomeTab.History -> HistoryScreen(
                     onEditTransactionClick = { txId ->
                         transactionIdToEdit = txId
                         showBottomSheet = true
-                    }
+                    },
+                    onTransactionClick = onNavigateToTransaction
                 )
                 HomeTab.Reports -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Reports Content") }
                 HomeTab.Profile -> ProfileScreen(onNavigateToCategories = onNavigateToCategories, onLogout = onLogout)
@@ -134,7 +136,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun HomeContent(uiState: HomeUiState) {
+fun HomeContent(uiState: HomeUiState, onTransactionClick: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -197,7 +199,7 @@ fun HomeContent(uiState: HomeUiState) {
         Spacer(modifier = Modifier.height(32.dp))
 
         // Recent Transactions
-        RecentTransactionsSection(uiState.recentTransactions)
+        RecentTransactionsSection(uiState.recentTransactions, onTransactionClick)
         
         Spacer(modifier = Modifier.height(80.dp)) // Extra space for FAB and Bottom Nav
     }
@@ -317,7 +319,7 @@ fun WeeklySpendingSection(days: List<DailySpending>) {
 }
 
 @Composable
-fun RecentTransactionsSection(transactions: List<com.moneysnap.domain.model.Transaction>) {
+fun RecentTransactionsSection(transactions: List<com.moneysnap.domain.model.Transaction>, onTransactionClick: (String) -> Unit) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -347,7 +349,8 @@ fun RecentTransactionsSection(transactions: List<com.moneysnap.domain.model.Tran
                     amount = displayAmount,
                     icon = if (isExpense) Icons.Default.ShoppingCart else Icons.Default.AttachMoney,
                     iconTint = if (isExpense) Color(0xFF2196F3) else SuccessGreen,
-                    isNegative = isExpense
+                    isNegative = isExpense,
+                    onClick = { onTransactionClick(tx.id) }
                 )
             }
         }
@@ -361,11 +364,13 @@ fun TransactionItem(
     amount: String,
     icon: ImageVector,
     iconTint: Color,
-    isNegative: Boolean
+    isNegative: Boolean,
+    onClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onClick() }
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

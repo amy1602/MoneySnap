@@ -12,8 +12,9 @@ import com.moneysnap.presentation.auth.LoginScreen
 import com.moneysnap.presentation.auth.RegisterScreen
 import com.moneysnap.presentation.category.AddCategoryScreen
 import com.moneysnap.presentation.category.CategoriesScreen
-import com.moneysnap.presentation.home.HomeScreen
 import com.moneysnap.presentation.splash.SplashScreen
+import com.moneysnap.presentation.home.HomeScreen
+import com.moneysnap.presentation.transaction.TransactionDetailScreen
 
 @Composable
 fun AppNavigation() {
@@ -54,6 +55,7 @@ fun AppNavigation() {
         composable("home") {
             HomeScreen(
                 onNavigateToCategories = { navController.navigate("categories") },
+                onNavigateToTransaction = { txId -> navController.navigate("transaction_detail?transactionId=$txId") },
                 onLogout = {
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
@@ -86,6 +88,23 @@ fun AppNavigation() {
                 onBackClick = { navController.popBackStack() },
                 onSaveSuccess = { navController.popBackStack() }
             )
+        }
+        composable(
+            route = "transaction_detail?transactionId={transactionId}",
+            arguments = listOf(
+                navArgument("transactionId") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            )
+        ) { backStackEntry ->
+            val transactionId = backStackEntry.arguments?.getString("transactionId")
+            if (transactionId != null) {
+                TransactionDetailScreen(
+                    transactionId = transactionId,
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
         }
     }
 }

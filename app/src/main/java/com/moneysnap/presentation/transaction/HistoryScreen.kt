@@ -35,7 +35,8 @@ fun HistoryScreen(
     viewModel: HistoryViewModel = viewModel(
         factory = HistoryViewModel.provideFactory(LocalContext.current)
     ),
-    onEditTransactionClick: (String) -> Unit
+    onEditTransactionClick: (String) -> Unit,
+    onTransactionClick: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -177,7 +178,8 @@ fun HistoryScreen(
                             onDelete = { 
                                 transactionToDelete = item.transaction.id
                                 showDeleteDialog = true
-                            }
+                            },
+                            onClick = { onTransactionClick(item.transaction.id) }
                         )
                     }
                 }
@@ -248,7 +250,8 @@ fun FilterChip(
 fun SwipeableHistoryItem(
     item: HistoryItem,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onClick: () -> Unit = {}
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
@@ -297,13 +300,13 @@ fun SwipeableHistoryItem(
             }
         },
         content = {
-            HistoryItemRow(item)
+            HistoryItemRow(item, onClick)
         }
     )
 }
 
 @Composable
-fun HistoryItemRow(item: HistoryItem) {
+fun HistoryItemRow(item: HistoryItem, onClick: () -> Unit = {}) {
     val formatter = NumberFormat.getCurrencyInstance(Locale.US)
     val isExpense = item.transaction.type == TransactionType.EXPENSE
     
@@ -319,6 +322,7 @@ fun HistoryItemRow(item: HistoryItem) {
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
+            .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
