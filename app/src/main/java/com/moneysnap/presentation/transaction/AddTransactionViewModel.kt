@@ -26,7 +26,8 @@ data class AddTransactionState(
     val type: TransactionType = TransactionType.EXPENSE,
     val isSaving: Boolean = false,
     val saveSuccess: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val existingTransaction: Transaction? = null
 )
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
@@ -40,6 +41,34 @@ class AddTransactionViewModel(
 
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()
+
+    fun loadTransaction(transactionId: String) {
+        viewModelScope.launch {
+            val tx = transactionRepository.getTransactionById(transactionId)
+            if (tx != null) {
+                val amountStr = if (tx.amount % 1.0 == 0.0) {
+                    tx.amount.toInt().toString()
+                } else {
+                    tx.amount.toString()
+                }
+                
+                val category = categoryRepository.getCategoryById(tx.categoryId)
+                val catName = category?.name ?: "Selected"
+
+                _state.update {
+                    it.copy(
+                        amount = amountStr,
+                        categoryId = tx.categoryId,
+                        categoryName = catName,
+                        date = tx.date,
+                        note = tx.note,
+                        type = tx.type,
+                        existingTransaction = tx
+                    )
+                }
+            }
+        }
+    }
 
     val categories: StateFlow<List<Category>> = _state
         .map { it.type }
@@ -106,14 +135,17 @@ class AddTransactionViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isSaving = true) }
             try {
+                val existing = currentState.existingTransaction
                 val transaction = Transaction(
-                    id = UUID.randomUUID().toString(),
+                    id = existing?.id ?: UUID.randomUUID().toString(),
                     amount = amountValue,
                     categoryId = currentState.categoryId,
                     note = currentState.note.trim(),
                     date = currentState.date,
                     type = currentState.type,
-                    userId = "" // Repository handles this
+                    userId = existing?.userId ?: "", // Repository handles this or retains old
+                    isDeleted = existing?.isDeleted ?: false,
+                    updatedAt = System.currentTimeMillis()
                 )
                 transactionRepository.saveTransaction(transaction)
                 _state.update { it.copy(isSaving = false, saveSuccess = true) }

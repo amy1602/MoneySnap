@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.moneysnap.presentation.theme.PrimaryPink
 import com.moneysnap.presentation.transaction.AddTransactionScreen
+import com.moneysnap.presentation.transaction.HistoryScreen
 import com.moneysnap.presentation.profile.ProfileScreen
 
 enum class HomeTab { Home, History, Reports, Profile }
@@ -51,10 +52,14 @@ fun HomeScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by remember { mutableStateOf(false) }
     var currentTab by rememberSaveable { mutableStateOf(HomeTab.Home) }
+    var transactionIdToEdit by remember { mutableStateOf<String?>(null) }
 
     if (showBottomSheet) {
         ModalBottomSheet(
-            onDismissRequest = { showBottomSheet = false },
+            onDismissRequest = { 
+                showBottomSheet = false
+                transactionIdToEdit = null
+            },
             sheetState = sheetState,
             dragHandle = null,
             containerColor = Color.Transparent,
@@ -62,9 +67,14 @@ fun HomeScreen(
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
         ) {
             AddTransactionScreen(
-                onCloseClick = { showBottomSheet = false },
+                transactionId = transactionIdToEdit,
+                onCloseClick = { 
+                    showBottomSheet = false
+                    transactionIdToEdit = null
+                },
                 onSaveSuccess = { 
                     showBottomSheet = false
+                    transactionIdToEdit = null
                     viewModel.refresh() // Refresh home data after save
                 }
             )
@@ -73,7 +83,7 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            if (currentTab != HomeTab.Profile) {
+            if (currentTab != HomeTab.Profile && currentTab != HomeTab.History) {
                 TopAppBar(
                     title = {
                         Text(
@@ -110,7 +120,12 @@ fun HomeScreen(
         Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
             when (currentTab) {
                 HomeTab.Home -> HomeContent(uiState)
-                HomeTab.History -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("History Content") }
+                HomeTab.History -> HistoryScreen(
+                    onEditTransactionClick = { txId ->
+                        transactionIdToEdit = txId
+                        showBottomSheet = true
+                    }
+                )
                 HomeTab.Reports -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Reports Content") }
                 HomeTab.Profile -> ProfileScreen(onNavigateToCategories = onNavigateToCategories, onLogout = onLogout)
             }

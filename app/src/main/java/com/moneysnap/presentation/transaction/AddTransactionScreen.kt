@@ -59,6 +59,7 @@ class PrefixTransformation(private val prefix: String) : VisualTransformation {
 
 @Composable
 fun AddTransactionScreen(
+    transactionId: String? = null,
     onCloseClick: () -> Unit,
     onSaveSuccess: () -> Unit,
     viewModel: AddTransactionViewModel = viewModel(
@@ -70,6 +71,10 @@ fun AddTransactionScreen(
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     var showCategoryPicker by remember { mutableStateOf(false) }
+
+    LaunchedEffect(transactionId) {
+        transactionId?.let { viewModel.loadTransaction(it) }
+    }
 
     LaunchedEffect(viewModel.toastMessage) {
         viewModel.toastMessage.collect { message ->
@@ -107,7 +112,7 @@ fun AddTransactionScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "Add Transaction",
+                if (transactionId == null) "Add Transaction" else "Edit Transaction",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
@@ -235,7 +240,7 @@ fun AddTransactionScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(24.dp))
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text("Save Transaction", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(if (transactionId == null) "Save Transaction" else "Update Transaction", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
