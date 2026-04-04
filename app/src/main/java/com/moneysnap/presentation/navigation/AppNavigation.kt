@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import com.moneysnap.presentation.auth.AuthViewModel
 import com.moneysnap.presentation.auth.LoginScreen
 import com.moneysnap.presentation.auth.RegisterScreen
+import com.moneysnap.presentation.category.CategoriesScreen
 import com.moneysnap.presentation.home.HomeScreen
 import com.moneysnap.presentation.splash.SplashScreen
 
@@ -56,6 +57,15 @@ fun AppNavigation() {
                     }
                 }
             )
+        }
+        composable("categories") {
+            CategoriesScreen(
+                onBackClick = { navController.popBackStack() },
+                onAddCategoryClick = { navController.navigate("add_category") }
+            )
+        }
+        composable("add_category") {
+            // Placeholder for next task
         }
     }
 }

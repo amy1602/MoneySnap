@@ -6,6 +6,8 @@ import com.moneysnap.data.local.entity.toDomainModel
 import com.moneysnap.data.local.entity.toEntity
 import com.moneysnap.data.remote.FirestoreService
 import com.moneysnap.domain.model.Category
+import com.moneysnap.domain.model.CategoryConstants
+import com.moneysnap.domain.model.TransactionType
 import com.moneysnap.domain.repository.CategoryRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -105,6 +107,16 @@ class CategoryRepositoryImpl(
 
         } catch (e: Exception) {
             // Log sync error
+        }
+    }
+
+    override suspend fun seedDefaultCategories() {
+        val userId = currentUserId ?: return
+        val existing = categoryDao.getAllCategoriesIncludingDeleted(userId)
+        if (existing.isEmpty()) {
+            CategoryConstants.INITIAL_CATEGORIES.forEach { category ->
+                saveCategory(category.copy(userId = userId))
+            }
         }
     }
 }

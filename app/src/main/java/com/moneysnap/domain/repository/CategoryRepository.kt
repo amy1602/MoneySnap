@@ -9,4 +9,5 @@ interface CategoryRepository {
     suspend fun saveCategory(category: Category)
     suspend fun deleteCategory(categoryId: String)
     suspend fun syncCategories() // Triggers sync from Firestore to Room
+    suspend fun seedDefaultCategories()
 }
