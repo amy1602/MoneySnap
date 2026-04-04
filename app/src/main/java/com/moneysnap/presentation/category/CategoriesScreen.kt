@@ -169,9 +169,6 @@ fun CategoryItem(
         
         Column(modifier = Modifier.weight(1f)) {
             Text(category.name, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
-            Spacer(modifier = Modifier.height(4.dp))
-            // Dummy placeholder for transactions per month since calculation involves complex joins
-            Text("0 transactions this month", color = Color.Gray, fontSize = 12.sp)
         }
         
         Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color.Gray)

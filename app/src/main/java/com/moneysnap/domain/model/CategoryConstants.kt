@@ -8,11 +8,15 @@ object CategoryConstants {
     val DEFAULT_COLORS = listOf(
         "#FD3C4A", // Red
         "#F48FB1", // Peach
-        "#8D6E63", // Brown
+        "#FCAC12", // Orange/Yellow
         "#00A86B", // Green
-        "#FCAC12", // Yellow
+        "#00D1FF", // Cyan
         "#7F3DFF", // Purple
-        "#4B5563"  // Blue-grey
+        "#8D6E63", // Brown
+        "#4B5563", // Blue-grey
+        "#FF9AD5", // Pink
+        "#D4E157", // Lime
+        "#5D11F7"  // Deep Indigo
     )
 
     val ICON_MAP = mapOf(
@@ -25,9 +29,12 @@ object CategoryConstants {
         "Movie" to Icons.Default.Movie,
         "School" to Icons.Default.School,
         "CardGiftcard" to Icons.Default.CardGiftcard,
-        "ShoppingCart" to Icons.Default.ShoppingCart,
         "Home" to Icons.Default.Home,
-        "MonetizationOn" to Icons.Default.MonetizationOn
+        "MonetizationOn" to Icons.Default.MonetizationOn,
+        "Groups" to Icons.Default.Groups,         // Family
+        "People" to Icons.Default.People,         // Friends
+        "HealthAndSafety" to Icons.Default.HealthAndSafety, // Health
+        "Pets" to Icons.Default.Pets             // Pet
     )
 
     fun getIconByName(name: String): ImageVector {
