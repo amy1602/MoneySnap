@@ -207,27 +207,6 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Stats Cards
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            StatCard(
-                title = "Total Savings",
-                value = uiState.totalSavings,
-                modifier = Modifier.weight(1f)
-            )
-            StatCard(
-                title = "Transactions",
-                value = uiState.transactionCount.toString(),
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
         // Account Actions
         Text(
             text = "ACCOUNT ACTIONS",
@@ -267,26 +246,6 @@ fun ProfileScreen(
     }
 }
 
-@Composable
-fun StatCard(title: String, value: String, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier.height(100.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = ProfileCardBg)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(title, fontSize = 14.sp, color = Color.Gray)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(value, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = PrimaryPink)
-        }
-    }
-}
 
 @Composable
 fun ActionItem(
