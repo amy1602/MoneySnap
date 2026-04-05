@@ -18,6 +18,7 @@ import com.moneysnap.presentation.transaction.TransactionDetailScreen
 import com.moneysnap.presentation.profile.SelectAvatarScreen
 import com.moneysnap.presentation.profile.AccountSettingsScreen
 import com.moneysnap.presentation.profile.BiometricAuthScreen
+import com.moneysnap.presentation.profile.SelectLanguageScreen
 import com.moneysnap.presentation.profile.ProfileViewModel
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -132,6 +133,7 @@ fun AppNavigation() {
             AccountSettingsScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavigateToBiometric = { navController.navigate("biometric_auth") },
+                onNavigateToLanguage = { navController.navigate("select_language") },
                 onSignOut = {
                     profileViewModel.logout()
                     navController.navigate("login") {
@@ -144,6 +146,11 @@ fun AppNavigation() {
             BiometricAuthScreen(
                 onSuccess = { navController.popBackStack() },
                 onCancel = { navController.popBackStack() }
+            )
+        }
+        composable("select_language") {
+            SelectLanguageScreen(
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

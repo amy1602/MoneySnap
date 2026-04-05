@@ -35,6 +35,7 @@ private val TitleDark = Color(0xFF1A1C1E)
 fun AccountSettingsScreen(
     onBackClick: () -> Unit,
     onNavigateToBiometric: () -> Unit,
+    onNavigateToLanguage: () -> Unit,
     onSignOut: () -> Unit
 ) {
     Scaffold(
@@ -126,7 +127,7 @@ fun AccountSettingsScreen(
                     titleColor = TitleDark,
                     subtitle = "English (United States)",
                     showChevron = true,
-                    onClick = { /* TODO: Navigate to Language selection */ }
+                    onClick = onNavigateToLanguage
                 )
             }
 
