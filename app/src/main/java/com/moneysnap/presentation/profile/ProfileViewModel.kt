@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.moneysnap.data.local.MoneyDatabase
 import com.moneysnap.data.remote.FirestoreService
 import com.moneysnap.data.repository.AuthRepositoryImpl
@@ -24,6 +25,7 @@ import java.util.Locale
 data class ProfileUiState(
     val email: String = "",
     val name: String = "",
+    val avatarId: String? = null,
     val totalSavings: String = "$0.00",
     val transactionCount: Int = 0
 )
@@ -31,7 +33,8 @@ data class ProfileUiState(
 class ProfileViewModel(
     private val authRepository: AuthRepository,
     private val userStatsRepository: UserStatsRepository,
-    private val transactionRepository: TransactionRepository
+    private val transactionRepository: TransactionRepository,
+    private val firestoreService: FirestoreService
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -45,8 +48,9 @@ class ProfileViewModel(
         val user = FirebaseAuth.getInstance().currentUser
         val email = user?.email ?: "alex.thompson@example.com"
         val name = user?.displayName?.ifEmpty { "Alex Thompson" } ?: "Alex Thompson"
+        val avatarId = user?.photoUrl?.toString()
 
-        _uiState.update { it.copy(email = email, name = name) }
+        _uiState.update { it.copy(email = email, name = name, avatarId = avatarId) }
 
         viewModelScope.launch {
             userStatsRepository.getUserStatsStream().collect { stats ->
@@ -64,6 +68,29 @@ class ProfileViewModel(
         }
     }
 
+    fun updateAvatar(avatarId: String) {
+        val user = FirebaseAuth.getInstance().currentUser ?: return
+        
+        val request = UserProfileChangeRequest.Builder()
+            .setPhotoUri(android.net.Uri.parse(avatarId))
+            .build()
+            
+        user.updateProfile(request).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                _uiState.update { it.copy(avatarId = avatarId) }
+                // Persist to Firestore
+                val userId = user.uid
+                viewModelScope.launch {
+                    try {
+                        firestoreService.updateUserAvatar(userId, avatarId)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        }
+    }
+
     fun logout() {
         authRepository.logout()
     }
@@ -74,9 +101,10 @@ class ProfileViewModel(
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 val authRepo = AuthRepositoryImpl()
                 val db = MoneyDatabase.getDatabase(context)
-                val userStatsRepo = UserStatsRepositoryImpl(db.userStatsDao(), FirestoreService())
-                val transactionRepo = TransactionRepositoryImpl(db.transactionDao(), FirestoreService())
-                return ProfileViewModel(authRepo, userStatsRepo, transactionRepo) as T
+                val firestoreService = FirestoreService()
+                val userStatsRepo = UserStatsRepositoryImpl(db.userStatsDao(), firestoreService)
+                val transactionRepo = TransactionRepositoryImpl(db.transactionDao(), firestoreService)
+                return ProfileViewModel(authRepo, userStatsRepo, transactionRepo, firestoreService) as T
             }
         }
     }

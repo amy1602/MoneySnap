@@ -47,7 +47,11 @@ fun HomeScreen(
     ),
     onNavigateToCategories: () -> Unit = {},
     onNavigateToTransaction: (String) -> Unit = {},
-    onLogout: () -> Unit = {}
+    onNavigateToSelectAvatar: () -> Unit = {},
+    onLogout: () -> Unit = {},
+    profileViewModel: com.moneysnap.presentation.profile.ProfileViewModel = viewModel(
+        factory = com.moneysnap.presentation.profile.ProfileViewModel.provideFactory(LocalContext.current)
+    )
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -129,7 +133,12 @@ fun HomeScreen(
                     onTransactionClick = onNavigateToTransaction
                 )
                 HomeTab.Reports -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Reports Content") }
-                HomeTab.Profile -> ProfileScreen(onNavigateToCategories = onNavigateToCategories, onLogout = onLogout)
+                HomeTab.Profile -> com.moneysnap.presentation.profile.ProfileScreen(
+                    viewModel = profileViewModel,
+                    onNavigateToCategories = onNavigateToCategories,
+                    onNavigateToSelectAvatar = onNavigateToSelectAvatar,
+                    onLogout = onLogout
+                )
             }
         }
     }

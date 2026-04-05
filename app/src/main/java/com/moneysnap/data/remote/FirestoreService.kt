@@ -117,4 +117,10 @@ class FirestoreService(
             } catch (e: Exception) { null }
         } else null
     }
+
+    suspend fun updateUserAvatar(userId: String, avatarId: String) {
+        val data = mapOf("avatarId" to avatarId)
+        firestore.collection("users").document(userId)
+            .set(data, com.google.firebase.firestore.SetOptions.merge()).await()
+    }
 }

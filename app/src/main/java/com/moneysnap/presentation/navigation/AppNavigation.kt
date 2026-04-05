@@ -12,14 +12,22 @@ import com.moneysnap.presentation.auth.LoginScreen
 import com.moneysnap.presentation.auth.RegisterScreen
 import com.moneysnap.presentation.category.AddCategoryScreen
 import com.moneysnap.presentation.category.CategoriesScreen
-import com.moneysnap.presentation.splash.SplashScreen
 import com.moneysnap.presentation.home.HomeScreen
+import com.moneysnap.presentation.splash.SplashScreen
 import com.moneysnap.presentation.transaction.TransactionDetailScreen
+import com.moneysnap.presentation.profile.SelectAvatarScreen
+import com.moneysnap.presentation.profile.ProfileViewModel
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.getValue
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = viewModel()
+    val profileViewModel: ProfileViewModel = viewModel(
+        factory = ProfileViewModel.provideFactory(LocalContext.current)
+    )
 
     NavHost(navController = navController, startDestination = "splash") {
         composable("splash") {
@@ -56,11 +64,13 @@ fun AppNavigation() {
             HomeScreen(
                 onNavigateToCategories = { navController.navigate("categories") },
                 onNavigateToTransaction = { txId -> navController.navigate("transaction_detail?transactionId=$txId") },
+                onNavigateToSelectAvatar = { navController.navigate("select_avatar") },
                 onLogout = {
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
                     }
-                }
+                },
+                profileViewModel = profileViewModel
             )
         }
         composable("categories") {
@@ -105,6 +115,15 @@ fun AppNavigation() {
                     onBackClick = { navController.popBackStack() }
                 )
             }
+        }
+        composable("select_avatar") {
+            val uiState by profileViewModel.uiState.collectAsStateWithLifecycle()
+
+            SelectAvatarScreen(
+                currentAvatarId = uiState.avatarId,
+                onSaveAvatar = { avatarId -> profileViewModel.updateAvatar(avatarId) },
+                onBackClick = { navController.popBackStack() }
+            )
         }
     }
 }

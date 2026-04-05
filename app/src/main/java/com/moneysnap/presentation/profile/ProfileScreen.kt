@@ -12,6 +12,9 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.Image
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +38,7 @@ fun ProfileScreen(
         factory = ProfileViewModel.provideFactory(LocalContext.current)
     ),
     onNavigateToCategories: () -> Unit,
+    onNavigateToSelectAvatar: () -> Unit,
     onLogout: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -79,24 +83,26 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(contentAlignment = Alignment.BottomEnd) {
+                val currentAvatar = com.moneysnap.domain.model.AvatarConstants.getAvatarById(uiState.avatarId)
                 Box(
                     modifier = Modifier
                         .size(100.dp)
                         .clip(CircleShape)
-                        .background(Color.LightGray),
+                        .background(Color(0xFFE5E5E5)) // Neutral grey bg matching typical cat avatars
+                        .clickable { onNavigateToSelectAvatar() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        Icons.Default.Person,
+                    Image(
+                        painter = painterResource(id = currentAvatar.drawableRes),
                         contentDescription = "Avatar",
-                        modifier = Modifier.size(64.dp),
-                        tint = Color.White
+                        modifier = Modifier.fillMaxSize().padding(12.dp),
+                        contentScale = ContentScale.Fit
                     )
                 }
                 // Badge
                 Box(
                     modifier = Modifier
-                        .size(28.dp)
+                        .size(32.dp)
                         .clip(CircleShape)
                         .background(PrimaryPink)
                         .padding(4.dp),
