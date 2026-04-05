@@ -123,4 +123,10 @@ class FirestoreService(
         firestore.collection("users").document(userId)
             .set(data, com.google.firebase.firestore.SetOptions.merge()).await()
     }
+
+    suspend fun updateUserName(userId: String, name: String) {
+        val data = mapOf("name" to name)
+        firestore.collection("users").document(userId)
+            .set(data, com.google.firebase.firestore.SetOptions.merge()).await()
+    }
 }

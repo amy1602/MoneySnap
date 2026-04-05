@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.painterResource
@@ -42,6 +43,29 @@ fun ProfileScreen(
     onLogout: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var showChangeNameSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    if (showChangeNameSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showChangeNameSheet = false },
+            sheetState = sheetState,
+            dragHandle = null,
+            containerColor = Color.Transparent,
+            scrimColor = Color.Black.copy(alpha = 0.32f),
+            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        ) {
+            ChangeNameSheet(
+                currentName = uiState.name,
+                currentAvatarId = uiState.avatarId,
+                onSaveName = { newName ->
+                    viewModel.updateName(newName)
+                    showChangeNameSheet = false
+                },
+                onDismiss = { showChangeNameSheet = false }
+            )
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -99,12 +123,12 @@ fun ProfileScreen(
                         contentScale = ContentScale.Fit
                     )
                 }
-                // Badge
                 Box(
                     modifier = Modifier
                         .size(32.dp)
                         .clip(CircleShape)
                         .background(PrimaryPink)
+                        .clickable { showChangeNameSheet = true }
                         .padding(4.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -122,7 +146,8 @@ fun ProfileScreen(
                 text = uiState.name,
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.clickable { showChangeNameSheet = true }
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(

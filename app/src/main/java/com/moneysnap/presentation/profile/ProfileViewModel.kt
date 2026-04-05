@@ -91,6 +91,29 @@ class ProfileViewModel(
         }
     }
 
+    fun updateName(newName: String) {
+        val user = FirebaseAuth.getInstance().currentUser ?: return
+        
+        val request = UserProfileChangeRequest.Builder()
+            .setDisplayName(newName)
+            .build()
+            
+        user.updateProfile(request).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                _uiState.update { it.copy(name = newName) }
+                // Persist to Firestore
+                val userId = user.uid
+                viewModelScope.launch {
+                    try {
+                        firestoreService.updateUserName(userId, newName)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        }
+    }
+
     fun logout() {
         authRepository.logout()
     }
