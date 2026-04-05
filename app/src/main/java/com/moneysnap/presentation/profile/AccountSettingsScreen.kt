@@ -34,6 +34,7 @@ private val TitleDark = Color(0xFF1A1C1E)
 @Composable
 fun AccountSettingsScreen(
     onBackClick: () -> Unit,
+    onNavigateToBiometric: () -> Unit,
     onSignOut: () -> Unit
 ) {
     Scaffold(
@@ -102,7 +103,7 @@ fun AccountSettingsScreen(
                     titleColor = TitleDark,
                     subtitle = "Touch ID or Face ID",
                     showChevron = true,
-                    onClick = { /* TODO: Navigate to Biometric settings */ }
+                    onClick = onNavigateToBiometric
                 )
             }
 

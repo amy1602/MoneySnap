@@ -17,6 +17,7 @@ import com.moneysnap.presentation.splash.SplashScreen
 import com.moneysnap.presentation.transaction.TransactionDetailScreen
 import com.moneysnap.presentation.profile.SelectAvatarScreen
 import com.moneysnap.presentation.profile.AccountSettingsScreen
+import com.moneysnap.presentation.profile.BiometricAuthScreen
 import com.moneysnap.presentation.profile.ProfileViewModel
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -130,12 +131,19 @@ fun AppNavigation() {
         composable("account_settings") {
             AccountSettingsScreen(
                 onBackClick = { navController.popBackStack() },
+                onNavigateToBiometric = { navController.navigate("biometric_auth") },
                 onSignOut = {
                     profileViewModel.logout()
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
                     }
                 }
+            )
+        }
+        composable("biometric_auth") {
+            BiometricAuthScreen(
+                onSuccess = { navController.popBackStack() },
+                onCancel = { navController.popBackStack() }
             )
         }
     }

@@ -16,13 +16,18 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialException
+import androidx.fragment.app.FragmentActivity
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.moneysnap.data.local.BiometricPreferences
 import java.security.MessageDigest
 import java.util.UUID
 import kotlinx.coroutines.launch
@@ -76,6 +81,59 @@ fun LoginScreen(viewModel: AuthViewModel, onRegisterClick: () -> Unit, onLoginSu
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val credentialManager = remember { CredentialManager.create(context) }
+    val biometricPrefs = remember { BiometricPreferences(context) }
+    val isBiometricAvailable = remember {
+        biometricPrefs.isBiometricEnabled &&
+        com.google.firebase.auth.FirebaseAuth.getInstance().currentUser != null &&
+        biometricPrefs.biometricUserId == com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+    }
+
+    // Function to trigger biometric prompt
+    fun triggerBiometric() {
+        val activity = context as? FragmentActivity ?: return
+        val biometricManager = BiometricManager.from(context)
+        if (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.BIOMETRIC_WEAK) != BiometricManager.BIOMETRIC_SUCCESS) {
+            Toast.makeText(context, "Biometric not available", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val executor = ContextCompat.getMainExecutor(context)
+        val callback = object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                super.onAuthenticationSucceeded(result)
+                onLoginSuccess()
+            }
+
+            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                super.onAuthenticationError(errorCode, errString)
+                if (errorCode != BiometricPrompt.ERROR_USER_CANCELED && errorCode != BiometricPrompt.ERROR_NEGATIVE_BUTTON) {
+                    Toast.makeText(context, errString.toString(), Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onAuthenticationFailed() {
+                super.onAuthenticationFailed()
+                Toast.makeText(context, "Fingerprint not recognized", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        val biometricPrompt = BiometricPrompt(activity, executor, callback)
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Login with Biometric")
+            .setSubtitle("Use your fingerprint to sign in")
+            .setNegativeButtonText("Use Password")
+            .build()
+
+        biometricPrompt.authenticate(promptInfo)
+    }
+
+    // Auto-trigger biometric on launch if enabled
+    LaunchedEffect(isBiometricAvailable) {
+        if (isBiometricAvailable) {
+            triggerBiometric()
+        }
+    }
+
     LaunchedEffect(authState) {
         if (authState?.isSuccess == true) {
             onLoginSuccess()
@@ -116,50 +174,72 @@ fun LoginScreen(viewModel: AuthViewModel, onRegisterClick: () -> Unit, onLoginSu
         Text("Or continue with", color = TextLight, fontSize = 12.sp)
         Spacer(Modifier.height(16.dp))
         
-        OutlinedButton(
-            onClick = {
-                coroutineScope.launch {
-                    try {
-                        val rawNonce = UUID.randomUUID().toString()
-                        val bytes = rawNonce.toByteArray()
-                        val md = MessageDigest.getInstance("SHA-256")
-                        val digest = md.digest(bytes)
-                        val hashedNonce = digest.joinToString("") { "%02x".format(it) }
+        // Google + Biometric row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedButton(
+                onClick = {
+                    coroutineScope.launch {
+                        try {
+                            val rawNonce = UUID.randomUUID().toString()
+                            val bytes = rawNonce.toByteArray()
+                            val md = MessageDigest.getInstance("SHA-256")
+                            val digest = md.digest(bytes)
+                            val hashedNonce = digest.joinToString("") { "%02x".format(it) }
 
-                        val googleIdOption = GetGoogleIdOption.Builder()
-                            .setFilterByAuthorizedAccounts(false)
-                            .setServerClientId("765369903223-sp7qf3e5j256c95bemc6dtojn9c702g9.apps.googleusercontent.com")
-                            .setNonce(hashedNonce)
-                            .build()
+                            val googleIdOption = GetGoogleIdOption.Builder()
+                                .setFilterByAuthorizedAccounts(false)
+                                .setServerClientId("765369903223-sp7qf3e5j256c95bemc6dtojn9c702g9.apps.googleusercontent.com")
+                                .setNonce(hashedNonce)
+                                .build()
 
-                        val request = GetCredentialRequest.Builder()
-                            .addCredentialOption(googleIdOption)
-                            .build()
+                            val request = GetCredentialRequest.Builder()
+                                .addCredentialOption(googleIdOption)
+                                .build()
 
-                        val result = credentialManager.getCredential(
-                            request = request,
-                            context = context
-                        )
+                            val result = credentialManager.getCredential(
+                                request = request,
+                                context = context
+                            )
 
-                        val credential = result.credential
-                        if (credential is androidx.credentials.CustomCredential &&
-                            credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                            val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                            val idToken = googleIdTokenCredential.idToken
-                            viewModel.loginWithGoogle(idToken)
-                        } else {
-                            Toast.makeText(context, "Unexpected credential type", Toast.LENGTH_SHORT).show()
+                            val credential = result.credential
+                            if (credential is androidx.credentials.CustomCredential &&
+                                credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                                val idToken = googleIdTokenCredential.idToken
+                                viewModel.loginWithGoogle(idToken)
+                            } else {
+                                Toast.makeText(context, "Unexpected credential type", Toast.LENGTH_SHORT).show()
+                            }
+                        } catch (e: GetCredentialException) {
+                            Toast.makeText(context, "Google Sign-In failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
-                    } catch (e: GetCredentialException) {
-                        Toast.makeText(context, "Google Sign-In failed: ${e.message}", Toast.LENGTH_SHORT).show()
-                    } catch (e: Exception) {
-                        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
+                },
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.weight(1f).height(50.dp)
+            ) { Text("Google", color = TextDark, fontWeight = FontWeight.Bold) }
+
+            // Biometric login button (only show if biometric is enrolled)
+            if (isBiometricAvailable) {
+                OutlinedButton(
+                    onClick = { triggerBiometric() },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.height(50.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Fingerprint,
+                        contentDescription = "Login with fingerprint",
+                        tint = PrimaryPink,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
-            },
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth().height(50.dp)
-        ) { Text("Google", color = TextDark, fontWeight = FontWeight.Bold) }
+            }
+        }
         
         Spacer(Modifier.weight(1f))
         Row(Modifier.padding(bottom = 16.dp)) {
