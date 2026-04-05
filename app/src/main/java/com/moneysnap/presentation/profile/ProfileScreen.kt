@@ -45,7 +45,54 @@ fun ProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showChangeNameSheet by remember { mutableStateOf(false) }
+    var showLogoutDialog by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = {
+                Text(
+                    text = "Sign Out",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to sign out of your account?",
+                    fontSize = 16.sp
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showLogoutDialog = false
+                        viewModel.logout()
+                        onLogout()
+                    }
+                ) {
+                    Text(
+                        "Sign Out",
+                        color = PrimaryPink,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showLogoutDialog = false }
+                ) {
+                    Text(
+                        "Cancel",
+                        color = Color.Gray
+                    )
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
 
     if (showChangeNameSheet) {
         ModalBottomSheet(
@@ -213,10 +260,7 @@ fun ProfileScreen(
             title = "Logout",
             subtitle = "Sign out of your account",
             isDestructive = true,
-            onClick = {
-                viewModel.logout()
-                onLogout()
-            }
+            onClick = { showLogoutDialog = true }
         )
 
         Spacer(modifier = Modifier.height(80.dp)) // Padding for bottom nav
