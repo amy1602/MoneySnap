@@ -48,6 +48,7 @@ fun HomeScreen(
     onNavigateToCategories: () -> Unit = {},
     onNavigateToTransaction: (String) -> Unit = {},
     onNavigateToSelectAvatar: () -> Unit = {},
+    onNavigateToAccountSettings: () -> Unit = {},
     onLogout: () -> Unit = {},
     profileViewModel: com.moneysnap.presentation.profile.ProfileViewModel = viewModel(
         factory = com.moneysnap.presentation.profile.ProfileViewModel.provideFactory(LocalContext.current)
@@ -137,6 +138,7 @@ fun HomeScreen(
                     viewModel = profileViewModel,
                     onNavigateToCategories = onNavigateToCategories,
                     onNavigateToSelectAvatar = onNavigateToSelectAvatar,
+                    onNavigateToAccountSettings = onNavigateToAccountSettings,
                     onLogout = onLogout
                 )
             }

@@ -40,6 +40,7 @@ fun ProfileScreen(
     ),
     onNavigateToCategories: () -> Unit,
     onNavigateToSelectAvatar: () -> Unit,
+    onNavigateToAccountSettings: () -> Unit,
     onLogout: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -205,7 +206,7 @@ fun ProfileScreen(
             icon = Icons.Default.Settings,
             title = "Account Settings",
             subtitle = "Security, notifications, and privacy",
-            onClick = { /* TODO */ }
+            onClick = onNavigateToAccountSettings
         )
         ActionItem(
             icon = Icons.Default.Logout,

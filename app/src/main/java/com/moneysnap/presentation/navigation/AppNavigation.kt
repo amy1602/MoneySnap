@@ -16,6 +16,7 @@ import com.moneysnap.presentation.home.HomeScreen
 import com.moneysnap.presentation.splash.SplashScreen
 import com.moneysnap.presentation.transaction.TransactionDetailScreen
 import com.moneysnap.presentation.profile.SelectAvatarScreen
+import com.moneysnap.presentation.profile.AccountSettingsScreen
 import com.moneysnap.presentation.profile.ProfileViewModel
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -65,6 +66,7 @@ fun AppNavigation() {
                 onNavigateToCategories = { navController.navigate("categories") },
                 onNavigateToTransaction = { txId -> navController.navigate("transaction_detail?transactionId=$txId") },
                 onNavigateToSelectAvatar = { navController.navigate("select_avatar") },
+                onNavigateToAccountSettings = { navController.navigate("account_settings") },
                 onLogout = {
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
@@ -123,6 +125,17 @@ fun AppNavigation() {
                 currentAvatarId = uiState.avatarId,
                 onSaveAvatar = { avatarId -> profileViewModel.updateAvatar(avatarId) },
                 onBackClick = { navController.popBackStack() }
+            )
+        }
+        composable("account_settings") {
+            AccountSettingsScreen(
+                onBackClick = { navController.popBackStack() },
+                onSignOut = {
+                    profileViewModel.logout()
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
     }
