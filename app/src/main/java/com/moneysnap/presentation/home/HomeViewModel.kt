@@ -23,6 +23,8 @@ import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Calendar
 import java.util.Locale
+import com.moneysnap.domain.model.Category
+import com.moneysnap.presentation.report.TransactionWithCategory
 
 data class DailySpending(
     val dayOfWeek: String, // MON, TUE, etc.
@@ -34,7 +36,7 @@ data class HomeUiState(
     val totalBalance: String = "$0.00",
     val income: String = "$0.00",
     val expenses: String = "$0.00",
-    val recentTransactions: List<Transaction> = emptyList(),
+    val recentTransactions: List<TransactionWithCategory> = emptyList(),
     val weeklySpending: List<DailySpending> = emptyList()
 )
 
@@ -48,9 +50,10 @@ class HomeViewModel(
 
     val uiState: StateFlow<HomeUiState> = combine(
         userStatsRepository.getUserStatsStream(),
-        transactionRepository.getTransactions()
-    ) { stats, transactions ->
-        mapToUiState(stats, transactions)
+        transactionRepository.getTransactions(),
+        categoryRepository.getCategories()
+    ) { stats, transactions, categories ->
+        mapToUiState(stats, transactions, categories)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -70,12 +73,14 @@ class HomeViewModel(
         }
     }
 
-    private fun mapToUiState(stats: UserStats?, transactions: List<Transaction>): HomeUiState {
+    private fun mapToUiState(stats: UserStats?, transactions: List<Transaction>, categories: List<Category>): HomeUiState {
         val incomeValue = transactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
         val expenseValue = transactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
         val balanceValue = incomeValue - expenseValue
 
-        val recentTxs = transactions.sortedByDescending { it.date }.take(5)
+        val recentTxs = transactions.sortedByDescending { it.date }.take(5).map { tx ->
+            TransactionWithCategory(tx, categories.find { it.id == tx.categoryId })
+        }
 
         val weekly = calculateWeeklySpending(transactions)
 

@@ -98,7 +98,11 @@ fun HomeScreen(
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
             when (currentTab) {
-                HomeTab.Home -> HomeContent(uiState, onNavigateToTransaction)
+                HomeTab.Home -> HomeContent(
+                    uiState = uiState,
+                    onViewAllClick = { currentTab = HomeTab.History },
+                    onTransactionClick = onNavigateToTransaction
+                )
                 HomeTab.History -> HistoryScreen(
                     onEditTransactionClick = { txId ->
                         transactionIdToEdit = txId
@@ -122,7 +126,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun HomeContent(uiState: HomeUiState, onTransactionClick: (String) -> Unit) {
+fun HomeContent(uiState: HomeUiState, onViewAllClick: () -> Unit, onTransactionClick: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -185,7 +189,7 @@ fun HomeContent(uiState: HomeUiState, onTransactionClick: (String) -> Unit) {
         Spacer(modifier = Modifier.height(32.dp))
 
         // Recent Transactions
-        RecentTransactionsSection(uiState.recentTransactions, onTransactionClick)
+        RecentTransactionsSection(uiState.recentTransactions, onViewAllClick, onTransactionClick)
         
         Spacer(modifier = Modifier.height(80.dp)) // Extra space for FAB and Bottom Nav
     }
@@ -305,7 +309,7 @@ fun WeeklySpendingSection(days: List<DailySpending>) {
 }
 
 @Composable
-fun RecentTransactionsSection(transactions: List<com.moneysnap.domain.model.Transaction>, onTransactionClick: (String) -> Unit) {
+fun RecentTransactionsSection(transactions: List<com.moneysnap.presentation.report.TransactionWithCategory>, onViewAllClick: () -> Unit, onTransactionClick: (String) -> Unit) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -313,7 +317,15 @@ fun RecentTransactionsSection(transactions: List<com.moneysnap.domain.model.Tran
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text("Recent Transactions", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Text("View All", fontSize = 14.sp, color = PrimaryPink, fontWeight = FontWeight.Medium)
+            Text(
+                text = "View All", 
+                fontSize = 14.sp, 
+                color = PrimaryPink, 
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier
+                    .clickable { onViewAllClick() }
+                    .padding(4.dp)
+            )
         }
         Spacer(modifier = Modifier.height(16.dp))
         
@@ -321,7 +333,8 @@ fun RecentTransactionsSection(transactions: List<com.moneysnap.domain.model.Tran
             Text("No recent transactions", color = Color.Gray, modifier = Modifier.padding(vertical = 16.dp))
         } else {
             val formatter = java.text.NumberFormat.getCurrencyInstance(java.util.Locale.US)
-            transactions.forEach { tx ->
+            transactions.forEach { txWithCat ->
+                val tx = txWithCat.transaction
                 val isExpense = tx.type == com.moneysnap.domain.model.TransactionType.EXPENSE
                 val formattedAmount = formatter.format(tx.amount)
                 val displayAmount = if (isExpense) "-$formattedAmount" else "+$formattedAmount"
@@ -329,12 +342,21 @@ fun RecentTransactionsSection(transactions: List<com.moneysnap.domain.model.Tran
                 // Formatter for date (simplified)
                 val dateStr = android.text.format.DateFormat.format("MMM dd, yyyy", java.util.Date(tx.date)).toString()
                 
+                val iconName = txWithCat.category?.icon ?: "Error"
+                val vectorIcon = com.moneysnap.domain.model.CategoryConstants.getIconByName(iconName)
+                val catColor = txWithCat.category?.color ?: if (isExpense) "#2196F3" else "#4CAF50"
+                val tint = try {
+                    Color(android.graphics.Color.parseColor(catColor))
+                } catch (e: Exception) {
+                    if (isExpense) Color(0xFF2196F3) else SuccessGreen
+                }
+                
                 TransactionItem(
-                    title = tx.note.ifBlank { "Transaction" },
+                    title = tx.note.ifBlank { txWithCat.category?.name ?: "Transaction" },
                     subtitle = dateStr,
                     amount = displayAmount,
-                    icon = if (isExpense) Icons.Default.ShoppingCart else Icons.Default.AttachMoney,
-                    iconTint = if (isExpense) Color(0xFF2196F3) else SuccessGreen,
+                    icon = vectorIcon,
+                    iconTint = tint,
                     isNegative = isExpense,
                     onClick = { onTransactionClick(tx.id) }
                 )
