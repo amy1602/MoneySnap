@@ -18,6 +18,7 @@ import com.moneysnap.domain.repository.UserStatsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
@@ -27,13 +28,15 @@ data class ProfileUiState(
     val name: String = "",
     val avatarId: String? = null,
     val totalSavings: String = "$0.00",
-    val transactionCount: Int = 0
+    val transactionCount: Int = 0,
+    val isExporting: Boolean = false
 )
 
 class ProfileViewModel(
     private val authRepository: AuthRepository,
     private val userStatsRepository: UserStatsRepository,
     private val transactionRepository: TransactionRepository,
+    private val categoryRepository: com.moneysnap.domain.repository.CategoryRepository,
     private val firestoreService: FirestoreService
 ) : ViewModel() {
 
@@ -114,6 +117,22 @@ class ProfileViewModel(
         }
     }
 
+    fun exportToExcel(context: Context, onExportReady: (java.io.File) -> Unit) {
+        _uiState.update { it.copy(isExporting = true) }
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val transactions = transactionRepository.getTransactions().first()
+                val categories = categoryRepository.getCategories().first()
+                val file = com.moneysnap.util.ExcelExporter.exportTransactionsToExcel(context, transactions, categories)
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    onExportReady(file)
+                }
+            } finally {
+                _uiState.update { it.copy(isExporting = false) }
+            }
+        }
+    }
+
     fun logout() {
         authRepository.logout()
     }
@@ -127,7 +146,8 @@ class ProfileViewModel(
                 val firestoreService = FirestoreService()
                 val userStatsRepo = UserStatsRepositoryImpl(db.userStatsDao(), firestoreService)
                 val transactionRepo = TransactionRepositoryImpl(db.transactionDao(), firestoreService)
-                return ProfileViewModel(authRepo, userStatsRepo, transactionRepo, firestoreService) as T
+                val categoryRepo = com.moneysnap.data.repository.CategoryRepositoryImpl(db.categoryDao(), firestoreService)
+                return ProfileViewModel(authRepo, userStatsRepo, transactionRepo, categoryRepo, firestoreService) as T
             }
         }
     }

@@ -115,134 +115,181 @@ fun ProfileScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
-    ) {
-        // App Bar
-        TopAppBar(
-            title = {
-                Text(
-                    "Profile",
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = { /* Handle back if necessary, but this is a root tab */ }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                }
-            },
-            actions = {
-                // Spacer for balancing title center
-                IconButton(onClick = {}) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.Transparent)
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Avatar & Info
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .verticalScroll(rememberScrollState())
         ) {
-            Box(contentAlignment = Alignment.BottomEnd) {
-                val currentAvatar = com.moneysnap.domain.model.AvatarConstants.getAvatarById(uiState.avatarId)
-                Box(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFE5E5E5)) // Neutral grey bg matching typical cat avatars
-                        .clickable { onNavigateToSelectAvatar() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = currentAvatar.drawableRes),
-                        contentDescription = "Avatar",
-                        modifier = Modifier.fillMaxSize().padding(12.dp),
-                        contentScale = ContentScale.Fit
+            // App Bar
+            TopAppBar(
+                title = {
+                    Text(
+                        "Profile",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
                     )
-                }
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(PrimaryPink)
-                        .clickable { showChangeNameSheet = true }
-                        .padding(4.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = "Edit Profile",
-                        tint = Color.White,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            }
-
+                },
+                navigationIcon = {
+                    IconButton(onClick = { /* Handle back if necessary, but this is a root tab */ }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    // Spacer for balancing title center
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.Transparent)
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            )
+    
             Spacer(modifier = Modifier.height(16.dp))
+    
+            // Avatar & Info
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(contentAlignment = Alignment.BottomEnd) {
+                    val currentAvatar = com.moneysnap.domain.model.AvatarConstants.getAvatarById(uiState.avatarId)
+                    Box(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFE5E5E5)) // Neutral grey bg matching typical cat avatars
+                            .clickable { onNavigateToSelectAvatar() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = currentAvatar.drawableRes),
+                            contentDescription = "Avatar",
+                            modifier = Modifier.fillMaxSize().padding(12.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(PrimaryPink)
+                            .clickable { showChangeNameSheet = true }
+                            .padding(4.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Edit Profile",
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+    
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = uiState.name,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.clickable { showChangeNameSheet = true }
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = uiState.email,
+                    color = Color.Gray,
+                    fontSize = 14.sp
+                )
+            }
+    
+            Spacer(modifier = Modifier.height(32.dp))
+    
+            // Account Actions
             Text(
-                text = uiState.name,
+                text = "ACCOUNT ACTIONS",
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                fontSize = 22.sp,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.clickable { showChangeNameSheet = true }
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = uiState.email,
                 color = Color.Gray,
-                fontSize = 14.sp
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
             )
+    
+            val context = LocalContext.current
+    
+            ActionItem(
+                icon = Icons.Default.WorkOutline,
+                title = "Export to Excel",
+                subtitle = "Download your financial reports",
+                onClick = {
+                    viewModel.exportToExcel(context) { file ->
+                        val uri = androidx.core.content.FileProvider.getUriForFile(
+                            context,
+                            "${context.packageName}.fileprovider",
+                            file
+                        )
+                        val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                            type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        context.startActivity(android.content.Intent.createChooser(intent, "Share Excel Report"))
+                    }
+                }
+            )
+            ActionItem(
+                icon = Icons.Default.GridView,
+                title = "Categories",
+                subtitle = "Manage your spending categories",
+                onClick = onNavigateToCategories
+            )
+            ActionItem(
+                icon = Icons.Default.Settings,
+                title = "Account Settings",
+                subtitle = "Security, notifications, and privacy",
+                onClick = onNavigateToAccountSettings
+            )
+            ActionItem(
+                icon = Icons.Default.Logout,
+                title = "Logout",
+                subtitle = "Sign out of your account",
+                isDestructive = true,
+                onClick = { showLogoutDialog = true }
+            )
+    
+            Spacer(modifier = Modifier.height(80.dp)) // Padding for bottom nav
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Account Actions
-        Text(
-            text = "ACCOUNT ACTIONS",
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Gray,
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-        )
-
-        ActionItem(
-            icon = Icons.Default.WorkOutline,
-            title = "Export to Excel",
-            subtitle = "Download your financial reports",
-            onClick = { /* TODO */ }
-        )
-        ActionItem(
-            icon = Icons.Default.GridView,
-            title = "Categories",
-            subtitle = "Manage your spending categories",
-            onClick = onNavigateToCategories
-        )
-        ActionItem(
-            icon = Icons.Default.Settings,
-            title = "Account Settings",
-            subtitle = "Security, notifications, and privacy",
-            onClick = onNavigateToAccountSettings
-        )
-        ActionItem(
-            icon = Icons.Default.Logout,
-            title = "Logout",
-            subtitle = "Sign out of your account",
-            isDestructive = true,
-            onClick = { showLogoutDialog = true }
-        )
-
-        Spacer(modifier = Modifier.height(80.dp)) // Padding for bottom nav
+        if (uiState.isExporting) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.4f))
+                    .clickable(enabled = false) {}, // Intercept clicks while loading
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    modifier = Modifier.padding(16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator(color = PrimaryPink)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "Exporting Excel file...",
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
