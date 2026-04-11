@@ -88,33 +88,6 @@ fun HomeScreen(
     }
 
     Scaffold(
-        topBar = {
-            if (currentTab != HomeTab.Profile && currentTab != HomeTab.History) {
-                TopAppBar(
-                    title = {
-                        Text(
-                            "Money Manager",
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { /* TODO */ }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu")
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = { /* TODO */ }) {
-                            Icon(Icons.Default.Notifications, contentDescription = "Notifications")
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background
-                    )
-                )
-            }
-        },
         bottomBar = {
             HomeBottomNavigation(
                 selectedTab = currentTab,
@@ -133,7 +106,9 @@ fun HomeScreen(
                     },
                     onTransactionClick = onNavigateToTransaction
                 )
-                HomeTab.Reports -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Reports Content") }
+                HomeTab.Reports -> com.moneysnap.presentation.report.ReportScreen(
+                    onNavigateToTransaction = onNavigateToTransaction
+                )
                 HomeTab.Profile -> com.moneysnap.presentation.profile.ProfileScreen(
                     viewModel = profileViewModel,
                     onNavigateToCategories = onNavigateToCategories,
