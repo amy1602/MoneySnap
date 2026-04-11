@@ -57,6 +57,7 @@ class PrefixTransformation(private val prefix: String) : VisualTransformation {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionScreen(
     transactionId: String? = null,
@@ -71,6 +72,7 @@ fun AddTransactionScreen(
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     var showCategoryPicker by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(transactionId) {
         transactionId?.let { viewModel.loadTransaction(it) }
@@ -85,6 +87,7 @@ fun AddTransactionScreen(
     LaunchedEffect(state.saveSuccess) {
         if (state.saveSuccess) {
             onSaveSuccess()
+            viewModel.resetForm()
         }
     }
 
@@ -198,7 +201,7 @@ fun AddTransactionScreen(
         ModalInputField(
             icon = Icons.Default.CalendarToday,
             placeholder = dateFormatter.format(Date(state.date)),
-            onClick = { /* Placeholder for Date Picker */ }
+            onClick = { showDatePicker = true }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -267,6 +270,30 @@ fun AddTransactionScreen(
                 },
                 onDismiss = { showCategoryPicker = false }
             )
+        }
+
+        if (showDatePicker) {
+            val datePickerState = rememberDatePickerState(
+                initialSelectedDateMillis = state.date
+            )
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        datePickerState.selectedDateMillis?.let { viewModel.onDateChange(it) }
+                        showDatePicker = false
+                    }) {
+                        Text("OK")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) {
+                        Text("Cancel")
+                    }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
         }
     }
 }

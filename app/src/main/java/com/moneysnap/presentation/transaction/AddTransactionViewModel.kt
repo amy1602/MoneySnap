@@ -156,6 +156,10 @@ class AddTransactionViewModel(
         }
     }
 
+    fun resetForm() {
+        _state.value = AddTransactionState()
+    }
+
     companion object {
         fun provideFactory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
