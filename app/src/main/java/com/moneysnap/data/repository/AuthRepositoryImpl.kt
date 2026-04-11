@@ -45,6 +45,23 @@ class AuthRepositoryImpl(
         return auth.currentUser != null
     }
 
+    override suspend fun updatePassword(currentPass: String, newPass: String): Result<Unit> {
+        return try {
+            val user = auth.currentUser ?: throw Exception("No user logged in")
+            val email = user.email ?: throw Exception("User has no email associated")
+            
+            // Re-authenticate first
+            val credential = com.google.firebase.auth.EmailAuthProvider.getCredential(email, currentPass)
+            user.reauthenticate(credential).await()
+            
+            // Then update the password
+            user.updatePassword(newPass).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override fun logout() {
         auth.signOut()
     }

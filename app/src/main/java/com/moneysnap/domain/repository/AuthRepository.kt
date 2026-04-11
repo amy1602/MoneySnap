@@ -30,6 +30,12 @@ interface AuthRepository {
     fun isUserLoggedIn(): Boolean
 
     /**
+     * Updates the password for the currently logged in user.
+     * @return A Result indicating success or an Exception on failure.
+     */
+    suspend fun updatePassword(currentPass: String, newPass: String): Result<Unit>
+
+    /**
      * Logs out the current user.
      */
     fun logout()

@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 
 private val ScreenBg = Color(0xFFF8FAFC)
 private val AccentRed = Color(0xFFE55061)
@@ -85,6 +86,42 @@ fun AccountSettingsScreen(
         )
     }
 
+    var showUpdatePasswordSheet by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val authRepository = remember { com.moneysnap.data.repository.AuthRepositoryImpl() }
+
+    if (showUpdatePasswordSheet) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = { showUpdatePasswordSheet = false },
+            sheetState = sheetState,
+            dragHandle = null,
+            containerColor = Color.Transparent
+        ) {
+            UpdatePasswordSheet(
+                onDismiss = { showUpdatePasswordSheet = false },
+                onUpdatePassword = { oldPass, newPass ->
+                    scope.launch {
+                        val result = authRepository.updatePassword(oldPass, newPass)
+                        if (result.isSuccess) {
+                            android.widget.Toast.makeText(context, "Password updated successfully", android.widget.Toast.LENGTH_SHORT).show()
+                            showUpdatePasswordSheet = false
+                        } else {
+                            val exception = result.exceptionOrNull()
+                            val errorMessage = if (exception is com.google.firebase.auth.FirebaseAuthInvalidCredentialsException) {
+                                "Current password is wrong"
+                            } else {
+                                exception?.message ?: "Unknown error occurred"
+                            }
+                            android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            )
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -134,9 +171,9 @@ fun AccountSettingsScreen(
                     iconTint = AccentRed,
                     title = "Change Password",
                     titleColor = AccentRed,
-                    subtitle = "Last updated 3 months ago",
+                    subtitle = null,
                     showChevron = true,
-                    onClick = { /* TODO: Navigate to Change Password */ }
+                    onClick = { showUpdatePasswordSheet = true }
                 )
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 16.dp),
