@@ -12,6 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,101 +48,109 @@ fun RegisterScreen(viewModel: AuthViewModel, onLoginClick: () -> Unit, onRegiste
         }
     }
 
-    Column(
-        Modifier.fillMaxSize().background(BackgroundWhite).padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(Modifier.height(48.dp))
-        Text("Create Account", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = TextDark)
-        Text("Start tracking your expenses and save more today", fontSize = 14.sp, color = TextLight)
-        Spacer(Modifier.height(32.dp))
+    val scrollState = rememberScrollState()
 
-        CustomTextField(name, { name = it }, "John Doe", Icons.Filled.Person)
-        Spacer(Modifier.height(16.dp))
-        CustomTextField(email, { email = it }, "name@example.com", Icons.Filled.Email)
-        Spacer(Modifier.height(16.dp))
-        CustomTextField(password, { password = it }, "Password", Icons.Filled.Lock, true)
-        Spacer(Modifier.height(16.dp))
-        CustomTextField(confirmPassword, { confirmPassword = it }, "Confirm Password", Icons.Filled.Lock, true)
-        
-        Spacer(Modifier.height(16.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(
-                checked = agreed, 
-                onCheckedChange = { agreed = it }, 
-                colors = CheckboxDefaults.colors(checkedColor = PrimaryPink)
-            )
-            Text("I agree to the Terms of Service & Privacy Policy", fontSize = 12.sp, color = TextLight)
-        }
-        
-        Spacer(Modifier.height(24.dp))
-        Button(
-            onClick = {
-                val errorMessage = viewModel.validateRegistration(name, email, password, confirmPassword, agreed)
-                if (errorMessage != null) {
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-                } else {
-                    viewModel.register(email, password)
-                }
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = PrimaryPink),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth().height(50.dp)
-        ) { Text("Register", fontWeight = FontWeight.Bold, fontSize = 16.sp) }
-        
-        Spacer(Modifier.height(24.dp))
-        Text("Or register with", color = TextLight, fontSize = 12.sp)
-        Spacer(Modifier.height(16.dp))
-        
-        OutlinedButton(
-            onClick = {
-                coroutineScope.launch {
-                    try {
-                        val rawNonce = UUID.randomUUID().toString()
-                        val bytes = rawNonce.toByteArray()
-                        val md = MessageDigest.getInstance("SHA-256")
-                        val digest = md.digest(bytes)
-                        val hashedNonce = digest.joinToString("") { "%02x".format(it) }
+    Box(modifier = Modifier.fillMaxSize().imePadding()) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .background(BackgroundWhite)
+                .verticalScroll(scrollState)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(Modifier.height(48.dp))
+            Text("Create Account", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = TextDark)
+            Text("Start tracking your expenses and save more today", fontSize = 14.sp, color = TextLight)
+            Spacer(Modifier.height(32.dp))
 
-                        val googleIdOption = GetGoogleIdOption.Builder()
-                            .setFilterByAuthorizedAccounts(false)
-                            .setServerClientId("765369903223-sp7qf3e5j256c95bemc6dtojn9c702g9.apps.googleusercontent.com")
-                            .setNonce(hashedNonce)
-                            .build()
-
-                        val request = GetCredentialRequest.Builder()
-                            .addCredentialOption(googleIdOption)
-                            .build()
-
-                        val result = credentialManager.getCredential(
-                            request = request,
-                            context = context
-                        )
-
-                        val credential = result.credential
-                        if (credential is androidx.credentials.CustomCredential &&
-                            credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                            val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                            val idToken = googleIdTokenCredential.idToken
-                            viewModel.loginWithGoogle(idToken)
-                        } else {
-                            Toast.makeText(context, "Unexpected credential type", Toast.LENGTH_SHORT).show()
-                        }
-                    } catch (e: GetCredentialException) {
-                        Toast.makeText(context, "Google Sign-In failed: ${e.message}", Toast.LENGTH_SHORT).show()
-                    } catch (e: Exception) {
-                        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            CustomTextField(name, { name = it }, "John Doe", Icons.Filled.Person)
+            Spacer(Modifier.height(16.dp))
+            CustomTextField(email, { email = it }, "name@example.com", Icons.Filled.Email)
+            Spacer(Modifier.height(16.dp))
+            CustomTextField(password, { password = it }, "Password", Icons.Filled.Lock, true)
+            Spacer(Modifier.height(16.dp))
+            CustomTextField(confirmPassword, { confirmPassword = it }, "Confirm Password", Icons.Filled.Lock, true)
+            
+            Spacer(Modifier.height(16.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = agreed, 
+                    onCheckedChange = { agreed = it }, 
+                    colors = CheckboxDefaults.colors(checkedColor = PrimaryPink)
+                )
+                Text("I agree to the Terms of Service & Privacy Policy", fontSize = 12.sp, color = TextLight)
+            }
+            
+            Spacer(Modifier.height(24.dp))
+            Button(
+                onClick = {
+                    val errorMessage = viewModel.validateRegistration(name, email, password, confirmPassword, agreed)
+                    if (errorMessage != null) {
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                    } else {
+                        viewModel.register(email, password)
                     }
-                }
-            },
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth().height(50.dp)
-        ) { Text("Google", color = TextDark, fontWeight = FontWeight.Bold) }
-        
-        Spacer(Modifier.weight(1f))
-        Row(Modifier.padding(bottom = 16.dp)) {
-            Text("Already have an account? ", color = TextLight)
-            Text("Login", color = PrimaryPink, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { onLoginClick() })
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryPink),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+            ) { Text("Register", fontWeight = FontWeight.Bold, fontSize = 16.sp) }
+            
+            Spacer(Modifier.height(24.dp))
+            Text("Or register with", color = TextLight, fontSize = 12.sp)
+            Spacer(Modifier.height(16.dp))
+            
+            OutlinedButton(
+                onClick = {
+                    coroutineScope.launch {
+                        try {
+                            val rawNonce = UUID.randomUUID().toString()
+                            val bytes = rawNonce.toByteArray()
+                            val md = MessageDigest.getInstance("SHA-256")
+                            val digest = md.digest(bytes)
+                            val hashedNonce = digest.joinToString("") { "%02x".format(it) }
+
+                            val googleIdOption = GetGoogleIdOption.Builder()
+                                .setFilterByAuthorizedAccounts(false)
+                                .setServerClientId("765369903223-sp7qf3e5j256c95bemc6dtojn9c702g9.apps.googleusercontent.com")
+                                .setNonce(hashedNonce)
+                                .build()
+
+                            val request = GetCredentialRequest.Builder()
+                                .addCredentialOption(googleIdOption)
+                                .build()
+
+                            val result = credentialManager.getCredential(
+                                request = request,
+                                context = context
+                            )
+
+                            val credential = result.credential
+                            if (credential is androidx.credentials.CustomCredential &&
+                                credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                                val idToken = googleIdTokenCredential.idToken
+                                viewModel.loginWithGoogle(idToken)
+                            } else {
+                                Toast.makeText(context, "Unexpected credential type", Toast.LENGTH_SHORT).show()
+                            }
+                        } catch (e: GetCredentialException) {
+                            Toast.makeText(context, "Google Sign-In failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                },
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+            ) { Text("Google", color = TextDark, fontWeight = FontWeight.Bold) }
+            
+            Spacer(Modifier.height(48.dp))
+            Row(Modifier.padding(bottom = 16.dp)) {
+                Text("Already have an account? ", color = TextLight)
+                Text("Login", color = PrimaryPink, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { onLoginClick() })
+            }
         }
     }
 }

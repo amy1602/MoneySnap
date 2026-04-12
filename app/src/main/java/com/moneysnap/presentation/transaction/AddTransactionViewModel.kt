@@ -95,6 +95,25 @@ class AddTransactionViewModel(
         }
     }
 
+    fun onNumberClick(number: String) {
+        val currentAmount = _state.value.amount
+        if (currentAmount == "0") {
+            if (number != "000") {
+                onAmountChange(number)
+            }
+        } else {
+            onAmountChange(currentAmount + number)
+        }
+    }
+
+    fun onBackspace() {
+        val currentAmount = _state.value.amount
+        if (currentAmount.isNotEmpty() && currentAmount != "0") {
+            val newAmount = currentAmount.dropLast(1)
+            onAmountChange(if (newAmount.isEmpty()) "0" else newAmount)
+        }
+    }
+
     fun onCategorySelect(id: String, name: String) {
         _state.update { it.copy(categoryId = id, categoryName = name) }
     }

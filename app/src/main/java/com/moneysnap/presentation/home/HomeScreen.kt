@@ -70,7 +70,8 @@ fun HomeScreen(
             dragHandle = null,
             containerColor = Color.Transparent,
             scrimColor = Color.Black.copy(alpha = 0.32f),
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+            windowInsets = WindowInsets(0)
         ) {
             AddTransactionScreen(
                 transactionId = transactionIdToEdit,
