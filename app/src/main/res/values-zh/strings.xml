@@ -42,6 +42,10 @@
     <string name="profile_settings_subtitle">安全、通知和隐私</string>
     <string name="profile_logout_subtitle">退出您的账户</string>
     <string name="profile_exporting">正在导出Excel文件…</string>
+    <string name="profile_import_excel">从Excel导入</string>
+    <string name="profile_import_subtitle">从电子表格导入交易记录</string>
+    <string name="profile_importing">正在导入Excel文件…</string>
+    <string name="profile_import_result_title">导入结果</string>
     <string name="settings_security_access">安全与访问</string>
     <string name="settings_change_password">修改密码</string>
     <string name="settings_biometric">生物识别验证</string>

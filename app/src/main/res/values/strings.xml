@@ -42,6 +42,10 @@
     <string name="profile_settings_subtitle">Security, notifications, and privacy</string>
     <string name="profile_logout_subtitle">Sign out of your account</string>
     <string name="profile_exporting">Exporting Excel file...</string>
+    <string name="profile_import_excel">Import from Excel</string>
+    <string name="profile_import_subtitle">Import transactions from a spreadsheet</string>
+    <string name="profile_importing">Importing Excel file...</string>
+    <string name="profile_import_result_title">Import Result</string>
     <string name="settings_security_access">SECURITY &amp; ACCESS</string>
     <string name="settings_change_password">Change Password</string>
     <string name="settings_biometric">Biometric Authentication</string>

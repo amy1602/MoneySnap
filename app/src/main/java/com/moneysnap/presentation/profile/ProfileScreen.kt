@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.moneysnap.presentation.theme.PrimaryPink
 import androidx.compose.ui.res.stringResource
 import com.moneysnap.R
+import com.moneysnap.LocalImportFilePicker
 
 val ProfileCardBg = Color(0xFFFFF0F5)
 
@@ -50,6 +51,32 @@ fun ProfileScreen(
     var showChangeNameSheet by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val importContext = LocalContext.current
+    val launchImportPicker = LocalImportFilePicker.current
+
+    // Import result dialog
+    uiState.importResultMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { viewModel.clearImportResult() },
+            title = {
+                Text(
+                    text = stringResource(R.string.profile_import_result_title),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+            },
+            text = {
+                Text(text = message, fontSize = 16.sp)
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.clearImportResult() }) {
+                    Text(stringResource(R.string.common_ok), color = PrimaryPink, fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
 
     if (showLogoutDialog) {
         AlertDialog(
@@ -243,6 +270,16 @@ fun ProfileScreen(
                 }
             )
             ActionItem(
+                icon = Icons.Default.FileUpload,
+                title = stringResource(R.string.profile_import_excel),
+                subtitle = stringResource(R.string.profile_import_subtitle),
+                onClick = {
+                    launchImportPicker { uri ->
+                        uri?.let { viewModel.importFromExcel(importContext, it) }
+                    }
+                }
+            )
+            ActionItem(
                 icon = Icons.Default.GridView,
                 title = stringResource(R.string.categories_title),
                 subtitle = stringResource(R.string.profile_manage_categories),
@@ -286,6 +323,35 @@ fun ProfileScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             stringResource(R.string.profile_exporting),
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+            }
+        }
+
+        if (uiState.isImporting) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.4f))
+                    .clickable(enabled = false) {},
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    modifier = Modifier.padding(16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator(color = PrimaryPink)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            stringResource(R.string.profile_importing),
                             fontWeight = FontWeight.Medium,
                             fontSize = 16.sp
                         )

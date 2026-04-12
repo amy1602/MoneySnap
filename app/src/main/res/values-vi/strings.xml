@@ -138,6 +138,10 @@
     <string name="profile_settings_subtitle">Bảo mật, thông báo và quyền riêng tư</string>
     <string name="profile_logout_subtitle">Đăng xuất khỏi tài khoản của bạn</string>
     <string name="profile_exporting">Đang xuất file Excel...</string>
+    <string name="profile_import_excel">Nhập từ Excel</string>
+    <string name="profile_import_subtitle">Nhập giao dịch từ bảng tính</string>
+    <string name="profile_importing">Đang nhập file Excel...</string>
+    <string name="profile_import_result_title">Kết quả nhập</string>
     <string name="settings_security_access">BẢO MẬT &amp; TRUY CẬP</string>
     <string name="settings_change_password">Đổi mật khẩu</string>
     <string name="settings_biometric">Xác thực sinh trắc học</string>

@@ -29,7 +29,9 @@ data class ProfileUiState(
     val avatarId: String? = null,
     val totalSavings: String = "$0.00",
     val transactionCount: Int = 0,
-    val isExporting: Boolean = false
+    val isExporting: Boolean = false,
+    val isImporting: Boolean = false,
+    val importResultMessage: String? = null
 )
 
 class ProfileViewModel(
@@ -131,6 +133,61 @@ class ProfileViewModel(
                 _uiState.update { it.copy(isExporting = false) }
             }
         }
+    }
+
+    fun importFromExcel(context: Context, uri: android.net.Uri) {
+        _uiState.update { it.copy(isImporting = true, importResultMessage = null) }
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val categories = categoryRepository.getCategories().first()
+                val userId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                val (transactions, result) = com.moneysnap.util.ExcelImporter.importTransactionsFromExcel(
+                    context, uri, categories, userId
+                )
+
+                // Save all imported transactions
+                for (transaction in transactions) {
+                    transactionRepository.saveTransaction(transaction)
+                }
+
+                // Recalculate user stats after import
+                if (transactions.isNotEmpty()) {
+                    val allTransactions = transactionRepository.getTransactions().first()
+                    val totalIncome = allTransactions
+                        .filter { it.type == com.moneysnap.domain.model.TransactionType.INCOME }
+                        .sumOf { it.amount }
+                    val totalExpense = allTransactions
+                        .filter { it.type == com.moneysnap.domain.model.TransactionType.EXPENSE }
+                        .sumOf { it.amount }
+                    val stats = com.moneysnap.domain.model.UserStats(
+                        userId = userId,
+                        totalBalance = totalIncome - totalExpense,
+                        totalIncome = totalIncome,
+                        totalExpense = totalExpense,
+                        lastUpdated = System.currentTimeMillis()
+                    )
+                    userStatsRepository.updateUserStats(stats)
+                }
+
+                val message = if (result.errors.isEmpty()) {
+                    "Imported ${result.importedCount} transactions successfully"
+                } else {
+                    "Imported ${result.importedCount}, skipped ${result.skippedCount}"
+                }
+
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    _uiState.update { it.copy(isImporting = false, importResultMessage = message) }
+                }
+            } catch (e: Exception) {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    _uiState.update { it.copy(isImporting = false, importResultMessage = "Import failed: ${e.message}") }
+                }
+            }
+        }
+    }
+
+    fun clearImportResult() {
+        _uiState.update { it.copy(importResultMessage = null) }
     }
 
     fun logout() {
