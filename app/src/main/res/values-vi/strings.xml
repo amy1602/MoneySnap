@@ -142,6 +142,9 @@
     <string name="profile_import_subtitle">Nhập giao dịch từ bảng tính</string>
     <string name="profile_importing">Đang nhập file Excel...</string>
     <string name="profile_import_result_title">Kết quả nhập</string>
+    <string name="profile_clear_history">Xóa toàn bộ lịch sử</string>
+    <string name="profile_clear_history_subtitle">Xóa tất cả các bản ghi giao dịch</string>
+    <string name="profile_clear_history_message">Bạn có chắc chắn muốn xóa toàn bộ lịch sử giao dịch? Số dư của bạn sẽ được đặt lại về không. Hành động này không thể hoàn tác.</string>
     <string name="settings_security_access">BẢO MẬT &amp; TRUY CẬP</string>
     <string name="settings_change_password">Đổi mật khẩu</string>
     <string name="settings_biometric">Xác thực sinh trắc học</string>

@@ -190,6 +190,26 @@ class ProfileViewModel(
         _uiState.update { it.copy(importResultMessage = null) }
     }
 
+    fun clearAllHistory() {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                transactionRepository.deleteAllTransactions()
+
+                val userId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                val stats = com.moneysnap.domain.model.UserStats(
+                    userId = userId,
+                    totalBalance = 0.0,
+                    totalIncome = 0.0,
+                    totalExpense = 0.0,
+                    lastUpdated = System.currentTimeMillis()
+                )
+                userStatsRepository.updateUserStats(stats)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     fun logout() {
         authRepository.logout()
     }

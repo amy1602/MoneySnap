@@ -28,11 +28,11 @@ class CategoryRepositoryImpl(
     private val currentUserId: String?
         get() = auth.currentUser?.uid
 
-    override fun getCategories(): Flow<List<Category>> = flow {
-        val userId = currentUserId ?: return@flow
-        emitAll(categoryDao.getAllCategories(userId).map { list ->
+    override fun getCategories(): Flow<List<Category>> {
+        val userId = currentUserId ?: return kotlinx.coroutines.flow.flowOf(emptyList())
+        return categoryDao.getAllCategories(userId).map { list ->
             list.map { it.toDomainModel() }
-        })
+        }
     }
 
     override suspend fun getCategoryById(categoryId: String): Category? {

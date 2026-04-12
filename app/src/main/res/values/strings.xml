@@ -46,6 +46,9 @@
     <string name="profile_import_subtitle">Import transactions from a spreadsheet</string>
     <string name="profile_importing">Importing Excel file...</string>
     <string name="profile_import_result_title">Import Result</string>
+    <string name="profile_clear_history">Clear All History</string>
+    <string name="profile_clear_history_subtitle">Delete all transaction records</string>
+    <string name="profile_clear_history_message">Are you sure you want to delete all transaction history? Your balance will be reset to zero. This action cannot be undone.</string>
     <string name="settings_security_access">SECURITY &amp; ACCESS</string>
     <string name="settings_change_password">Change Password</string>
     <string name="settings_biometric">Biometric Authentication</string>

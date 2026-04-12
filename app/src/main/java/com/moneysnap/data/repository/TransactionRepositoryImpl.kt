@@ -26,11 +26,11 @@ class TransactionRepositoryImpl(
     private val currentUserId: String?
         get() = auth.currentUser?.uid
 
-    override fun getTransactions(): Flow<List<Transaction>> = flow {
-        val userId = currentUserId ?: return@flow
-        emitAll(transactionDao.getAllTransactions(userId).map { list ->
+    override fun getTransactions(): Flow<List<Transaction>> {
+        val userId = currentUserId ?: return kotlinx.coroutines.flow.flowOf(emptyList())
+        return transactionDao.getAllTransactions(userId).map { list ->
             list.map { it.toDomainModel() }
-        })
+        }
     }
 
     override suspend fun getTransactionById(transactionId: String): Transaction? {
@@ -62,6 +62,21 @@ class TransactionRepositoryImpl(
                 val deletedTx = transactionDao.getTransactionById(transactionId, userId)
                 if (deletedTx != null) {
                     firestoreService.syncTransactionToRemote(deletedTx.toDomainModel(), userId)
+                }
+            } catch (e: Exception) { }
+        }
+    }
+
+    override suspend fun deleteAllTransactions() {
+        val userId = currentUserId ?: return
+        val updatedAt = System.currentTimeMillis()
+        transactionDao.deleteAllTransactions(userId, updatedAt)
+
+        scope.launch {
+            try {
+                val allTxs = transactionDao.getAllTransactionsIncludingDeleted(userId)
+                allTxs.filter { it.isDeleted }.forEach { tx ->
+                    firestoreService.syncTransactionToRemote(tx.toDomainModel(), userId)
                 }
             } catch (e: Exception) { }
         }

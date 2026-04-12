@@ -50,6 +50,7 @@ fun ProfileScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showChangeNameSheet by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showClearHistoryDialog by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val importContext = LocalContext.current
     val launchImportPicker = LocalImportFilePicker.current
@@ -112,6 +113,51 @@ fun ProfileScreen(
             dismissButton = {
                 TextButton(
                     onClick = { showLogoutDialog = false }
+                ) {
+                    Text(
+                        stringResource(R.string.common_cancel),
+                        color = Color.Gray
+                    )
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    if (showClearHistoryDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearHistoryDialog = false },
+            title = {
+                Text(
+                    text = stringResource(R.string.profile_clear_history),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.profile_clear_history_message),
+                    fontSize = 16.sp
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showClearHistoryDialog = false
+                        viewModel.clearAllHistory()
+                    }
+                ) {
+                    Text(
+                        stringResource(R.string.common_delete),
+                        color = PrimaryPink,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showClearHistoryDialog = false }
                 ) {
                     Text(
                         stringResource(R.string.common_cancel),
@@ -290,6 +336,13 @@ fun ProfileScreen(
                 title = stringResource(R.string.profile_account_settings),
                 subtitle = stringResource(R.string.profile_settings_subtitle),
                 onClick = onNavigateToAccountSettings
+            )
+            ActionItem(
+                icon = Icons.Default.DeleteSweep,
+                title = stringResource(R.string.profile_clear_history),
+                subtitle = stringResource(R.string.profile_clear_history_subtitle),
+                isDestructive = true,
+                onClick = { showClearHistoryDialog = true }
             )
             ActionItem(
                 icon = Icons.Default.Logout,

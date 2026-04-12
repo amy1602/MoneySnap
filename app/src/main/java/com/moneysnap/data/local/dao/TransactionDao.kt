@@ -28,4 +28,7 @@ interface TransactionDao {
 
     @Query("UPDATE transactions SET isDeleted = 1, updatedAt = :updatedAt WHERE id = :transactionId AND userId = :userId")
     suspend fun deleteTransaction(transactionId: String, userId: String, updatedAt: Long = System.currentTimeMillis())
+
+    @Query("UPDATE transactions SET isDeleted = 1, updatedAt = :updatedAt WHERE userId = :userId AND isDeleted = 0")
+    suspend fun deleteAllTransactions(userId: String, updatedAt: Long = System.currentTimeMillis())
 }

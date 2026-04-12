@@ -46,6 +46,9 @@
     <string name="profile_import_subtitle">从电子表格导入交易记录</string>
     <string name="profile_importing">正在导入Excel文件…</string>
     <string name="profile_import_result_title">导入结果</string>
+    <string name="profile_clear_history">清除所有记录</string>
+    <string name="profile_clear_history_subtitle">删除所有交易记录</string>
+    <string name="profile_clear_history_message">确定要删除所有交易记录吗？您的余额将被重置为零。此操作无法撤销。</string>
     <string name="settings_security_access">安全与访问</string>
     <string name="settings_change_password">修改密码</string>
     <string name="settings_biometric">生物识别验证</string>
