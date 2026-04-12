@@ -96,7 +96,9 @@ fun TransactionDetailScreen(
             val category = uiState.category
             
             val isExpense = transaction.type == TransactionType.EXPENSE
-            val formatter = NumberFormat.getCurrencyInstance(Locale.US)
+            val formatter = NumberFormat.getCurrencyInstance(Locale.US).apply {
+                maximumFractionDigits = 0
+            }
             val displayAmount = if (isExpense) "-${formatter.format(transaction.amount)}" else "+${formatter.format(transaction.amount)}"
             val amountColor = if (isExpense) MaterialTheme.colorScheme.onBackground else Color(0xFF4CAF50)
  

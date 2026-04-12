@@ -33,9 +33,11 @@ data class DailySpending(
 )
 
 data class HomeUiState(
-    val totalBalance: String = "$0.00",
-    val income: String = "$0.00",
-    val expenses: String = "$0.00",
+    val totalBalance: String = "$0",
+    val income: String = "$0",
+    val expenses: String = "$0",
+    val incomePercentage: String = "0%",
+    val expensesPercentage: String = "0%",
     val recentTransactions: List<TransactionWithCategory> = emptyList(),
     val weeklySpending: List<DailySpending> = emptyList()
 )
@@ -46,7 +48,9 @@ class HomeViewModel(
     private val categoryRepository: CategoryRepository
 ) : ViewModel() {
 
-    private val currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US)
+    private val currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US).apply {
+        maximumFractionDigits = 0
+    }
 
     val uiState: StateFlow<HomeUiState> = combine(
         userStatsRepository.getUserStatsStream(),
@@ -78,6 +82,10 @@ class HomeViewModel(
         val expenseValue = transactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
         val balanceValue = incomeValue - expenseValue
 
+        val totalVolume = incomeValue + expenseValue
+        val incomePercent = if (totalVolume > 0) ((incomeValue / totalVolume) * 100).toInt() else 0
+        val expensePercent = if (totalVolume > 0) ((expenseValue / totalVolume) * 100).toInt() else 0
+
         val recentTxs = transactions.sortedByDescending { it.date }.take(5).map { tx ->
             TransactionWithCategory(tx, categories.find { it.id == tx.categoryId })
         }
@@ -88,6 +96,8 @@ class HomeViewModel(
             totalBalance = currencyFormatter.format(balanceValue),
             income = currencyFormatter.format(incomeValue),
             expenses = currencyFormatter.format(expenseValue),
+            incomePercentage = "+$incomePercent%",
+            expensesPercentage = "-$expensePercent%",
             recentTransactions = recentTxs,
             weeklySpending = weekly
         )

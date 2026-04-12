@@ -307,7 +307,9 @@ fun SwipeableHistoryItem(
 
 @Composable
 fun HistoryItemRow(item: HistoryItem, onClick: () -> Unit = {}) {
-    val formatter = NumberFormat.getCurrencyInstance(Locale.US)
+    val formatter = NumberFormat.getCurrencyInstance(Locale.US).apply {
+        maximumFractionDigits = 0
+    }
     val isExpense = item.transaction.type == TransactionType.EXPENSE
     
     val parsedColor = try {

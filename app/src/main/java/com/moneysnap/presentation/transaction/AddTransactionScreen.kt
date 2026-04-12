@@ -178,7 +178,7 @@ fun AddTransactionScreen(
                     textAlign = TextAlign.Center,
                     color = PrimaryPink
                 ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 visualTransformation = PrefixTransformation("$ "),
                 modifier = Modifier.fillMaxWidth(),
                 decorationBox = { innerTextField ->

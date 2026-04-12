@@ -60,7 +60,9 @@ class ProfileViewModel(
         viewModelScope.launch {
             userStatsRepository.getUserStatsStream().collect { stats ->
                 val statsObj = stats ?: UserStats()
-                val formatter = NumberFormat.getCurrencyInstance(Locale.US)
+                val formatter = NumberFormat.getCurrencyInstance(Locale.US).apply {
+                    maximumFractionDigits = 0
+                }
                 val savings = formatter.format(statsObj.totalBalance)
                 _uiState.update { it.copy(totalSavings = savings) }
             }

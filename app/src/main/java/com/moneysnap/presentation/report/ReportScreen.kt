@@ -119,7 +119,9 @@ fun ReportScreen(
 
 @Composable
 fun NetBalanceCard(uiState: ReportUiState) {
-    val currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US)
+    val currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US).apply {
+        maximumFractionDigits = 0
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -189,7 +191,7 @@ fun FlowAnalysisSection(uiState: ReportUiState) {
             Canvas(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
+                    .height(140.dp)
             ) {
                 val chartHeight = size.height
                 val barWidth = 16.dp.toPx()
@@ -265,7 +267,9 @@ fun FlowAnalysisSection(uiState: ReportUiState) {
 fun CategorySpendingSection(uiState: ReportUiState) {
     if (uiState.categorySpendings.isEmpty()) return
 
-    val currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US)
+    val currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US).apply {
+        maximumFractionDigits = 0
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -289,22 +293,21 @@ fun CategorySpendingSection(uiState: ReportUiState) {
         colors = CardDefaults.cardColors(containerColor = CardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier.padding(20.dp).fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Donut Chart
+            // Donut Chart - Centered Top
             Box(
                 modifier = Modifier
-                    .padding(vertical = 8.dp)
-                    .size(140.dp)
-                    .aspectRatio(1f)
-                    .weight(1f),
+                    .padding(vertical = 16.dp)
+                    .size(240.dp) // Much larger circle to accommodate bigger amount text
+                    .aspectRatio(1f),
                 contentAlignment = Alignment.Center
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     var startAngle = -90f
-                    val strokeWidth = 24.dp.toPx()
+                    val strokeWidth = 32.dp.toPx() // Thicker bars for larger circle
                     val diameter = size.minDimension - strokeWidth
                     val offset = Offset(
                         (size.width - diameter) / 2f,
@@ -334,20 +337,24 @@ fun CategorySpendingSection(uiState: ReportUiState) {
                 
                 // Center Text
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("TOTAL", fontSize = 10.sp, color = TextGray)
+                    Text("TOTAL", fontSize = 14.sp, color = TextGray)
                     Text(
                         text = currencyFormatter.format(uiState.totalExpense),
-                        fontSize = 14.sp,
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextDark
                     )
                 }
             }
 
-            // Legend
+            Spacer(modifier = Modifier.height(24.dp))
+            Divider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Legend - Below
             Column(
-                modifier = Modifier.weight(1f).padding(start = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 uiState.categorySpendings.forEach { spending ->
                     val color = try {
@@ -357,20 +364,31 @@ fun CategorySpendingSection(uiState: ReportUiState) {
                     }
                     val percentageStr = "${(spending.percentage * 100).toInt()}%"
                     
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(color))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column {
+                    Row(verticalAlignment = Alignment.Top) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .clip(CircleShape)
+                                        .background(color)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = spending.category?.name ?: "Unknown",
+                                    fontSize = 14.sp,
+                                    color = TextDark,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                             Text(
-                                text = spending.category?.name ?: "Unknown",
-                                fontSize = 12.sp,
-                                color = TextDark,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Text(
-                                text = percentageStr,
+                                text = "$percentageStr : ${currencyFormatter.format(spending.amount)}",
                                 fontSize = 11.sp,
-                                color = TextGray
+                                color = TextGray,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier
+                                    .padding(start = 18.dp)
+                                    .offset(y = (-4).dp)
                             )
                         }
                     }
@@ -399,7 +417,9 @@ fun SignificantOutflowSection(uiState: ReportUiState, onNavigateToTransaction: (
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-            val formatter = NumberFormat.getCurrencyInstance(Locale.US)
+            val formatter = NumberFormat.getCurrencyInstance(Locale.US).apply {
+                maximumFractionDigits = 0
+            }
             
             uiState.significantOutflows.forEach { item ->
                 val iconName = item.category?.icon ?: "Error"
@@ -412,7 +432,7 @@ fun SignificantOutflowSection(uiState: ReportUiState, onNavigateToTransaction: (
                 }
 
                 val dateStr = android.text.format.DateFormat.format("MMM dd, yyyy", java.util.Date(item.transaction.date)).toString()
-                val subtitle = "$dateStr • ${item.category?.name ?: "Unknown"}"
+                val subtitle = dateStr
 
                 TransactionItem(
                     title = item.transaction.note.ifBlank { item.category?.name ?: "Expense" },
@@ -421,7 +441,10 @@ fun SignificantOutflowSection(uiState: ReportUiState, onNavigateToTransaction: (
                     icon = vectorIcon,
                     iconTint = tint,
                     isNegative = true,
-                    onClick = { onNavigateToTransaction(item.transaction.id) }
+                    onClick = { onNavigateToTransaction(item.transaction.id) },
+                    titleFontSize = 14.sp,
+                    subtitleFontSize = 11.sp,
+                    amountFontSize = 14.sp
                 )
             }
         }

@@ -46,11 +46,7 @@ class AddTransactionViewModel(
         viewModelScope.launch {
             val tx = transactionRepository.getTransactionById(transactionId)
             if (tx != null) {
-                val amountStr = if (tx.amount % 1.0 == 0.0) {
-                    tx.amount.toInt().toString()
-                } else {
-                    tx.amount.toString()
-                }
+                val amountStr = tx.amount.toLong().toString()
                 
                 val category = categoryRepository.getCategoryById(tx.categoryId)
                 val catName = category?.name ?: "Selected"
@@ -94,7 +90,7 @@ class AddTransactionViewModel(
             }
         }
 
-        if (processed.isEmpty() || processed.matches(Regex("^\\d*\\.?\\d{0,2}\$"))) {
+        if (processed.isEmpty() || processed.matches(Regex("^\\d*$"))) {
             _state.update { it.copy(amount = processed) }
         }
     }

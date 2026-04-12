@@ -156,28 +156,28 @@ fun HomeContent(uiState: HomeUiState, onViewAllClick: () -> Unit, onTransactionC
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Income and Expenses Row
-        Row(
+        // Expenses and Income Column (Vertical Order)
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             BalanceCard(
-                modifier = Modifier.weight(1f),
-                title = "INCOME",
-                amount = uiState.income,
-                trend = "+0.0%", // TODO: Add real trend logic if needed
-                icon = Icons.Default.ArrowDownward,
-                color = SuccessGreen
-            )
-            BalanceCard(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxWidth(),
                 title = "EXPENSES",
                 amount = uiState.expenses,
-                trend = "-0.0%", // TODO: Add real trend logic if needed
+                trend = uiState.expensesPercentage,
                 icon = Icons.Default.ArrowUpward,
                 color = PrimaryPink
+            )
+            BalanceCard(
+                modifier = Modifier.fillMaxWidth(),
+                title = "INCOME",
+                amount = uiState.income,
+                trend = uiState.incomePercentage,
+                icon = Icons.Default.ArrowDownward,
+                color = SuccessGreen
             )
         }
 
@@ -332,7 +332,9 @@ fun RecentTransactionsSection(transactions: List<com.moneysnap.presentation.repo
         if (transactions.isEmpty()) {
             Text("No recent transactions", color = Color.Gray, modifier = Modifier.padding(vertical = 16.dp))
         } else {
-            val formatter = java.text.NumberFormat.getCurrencyInstance(java.util.Locale.US)
+            val formatter = java.text.NumberFormat.getCurrencyInstance(java.util.Locale.US).apply {
+                maximumFractionDigits = 0
+            }
             transactions.forEach { txWithCat ->
                 val tx = txWithCat.transaction
                 val isExpense = tx.type == com.moneysnap.domain.model.TransactionType.EXPENSE
@@ -373,7 +375,10 @@ fun TransactionItem(
     icon: ImageVector,
     iconTint: Color,
     isNegative: Boolean,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    titleFontSize: androidx.compose.ui.unit.TextUnit = 16.sp,
+    subtitleFontSize: androidx.compose.ui.unit.TextUnit = 13.sp,
+    amountFontSize: androidx.compose.ui.unit.TextUnit = 16.sp
 ) {
     Row(
         modifier = Modifier
@@ -393,14 +398,14 @@ fun TransactionItem(
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+            Text(title, fontWeight = FontWeight.SemiBold, fontSize = titleFontSize)
             Spacer(modifier = Modifier.height(2.dp))
-            Text(subtitle, color = Color.Gray, fontSize = 13.sp)
+            Text(subtitle, color = Color.Gray, fontSize = subtitleFontSize)
         }
         Text(
             text = amount,
             fontWeight = FontWeight.Bold,
-            fontSize = 16.sp,
+            fontSize = amountFontSize,
             color = if (isNegative) MaterialTheme.colorScheme.onBackground else SuccessGreen
         )
     }
