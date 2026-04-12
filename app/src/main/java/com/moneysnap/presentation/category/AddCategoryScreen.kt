@@ -30,6 +30,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.moneysnap.domain.model.CategoryConstants
 import com.moneysnap.domain.model.TransactionType
 import com.moneysnap.presentation.theme.PrimaryPink
+import androidx.compose.ui.res.stringResource
+import com.moneysnap.R
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,7 +69,7 @@ fun AddCategoryScreen(
             TopAppBar(
                 title = {
                     Text(
-                        if (categoryId == null) "Add Category" else "Edit Category",
+                        if (categoryId == null) stringResource(R.string.add_category_title) else stringResource(R.string.edit_category_title),
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center
@@ -74,7 +77,7 @@ fun AddCategoryScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.biometric_cancel))
                     }
                 },
                 actions = {
@@ -101,8 +104,8 @@ fun AddCategoryScreen(
             OutlinedTextField(
                 value = state.name,
                 onValueChange = { viewModel.onNameChange(it) },
-                label = { Text("Category name") },
-                placeholder = { Text("e.g. Cinema") },
+                label = { Text(stringResource(R.string.add_category_name_label)) },
+                placeholder = { Text(stringResource(R.string.add_category_name_hint), color = Color.Gray) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -124,13 +127,13 @@ fun AddCategoryScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 TypeButton(
-                    text = "Expense",
+                    text = stringResource(R.string.common_expense),
                     isSelected = state.type == TransactionType.EXPENSE,
                     onClick = { viewModel.onTypeChange(TransactionType.EXPENSE) },
                     modifier = Modifier.weight(1f)
                 )
                 TypeButton(
-                    text = "Income",
+                    text = stringResource(R.string.common_income),
                     isSelected = state.type == TransactionType.INCOME,
                     onClick = { viewModel.onTypeChange(TransactionType.INCOME) },
                     modifier = Modifier.weight(1f)
@@ -141,7 +144,7 @@ fun AddCategoryScreen(
 
             // Select Icon Section
             Text(
-                "Select Icon",
+                stringResource(R.string.add_category_select_icon),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
@@ -179,7 +182,7 @@ fun AddCategoryScreen(
 
             // Category Color Section
             Text(
-                "Category Color",
+                stringResource(R.string.add_category_color),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
@@ -232,7 +235,7 @@ fun AddCategoryScreen(
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
                     Text(
-                        if (categoryId == null) "Save Category" else "Update Category",
+                        if (categoryId == null) stringResource(R.string.add_category_save) else stringResource(R.string.add_category_update),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )

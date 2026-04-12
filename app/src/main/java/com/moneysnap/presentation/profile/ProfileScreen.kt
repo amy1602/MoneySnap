@@ -29,8 +29,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.moneysnap.presentation.theme.PrimaryPink
+import androidx.compose.ui.res.stringResource
+import com.moneysnap.R
 
 val ProfileCardBg = Color(0xFFFFF0F5)
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,14 +56,14 @@ fun ProfileScreen(
             onDismissRequest = { showLogoutDialog = false },
             title = {
                 Text(
-                    text = "Sign Out",
+                    text = stringResource(R.string.profile_sign_out),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
             },
             text = {
                 Text(
-                    text = "Are you sure you want to sign out of your account?",
+                    text = stringResource(R.string.profile_sign_out_message),
                     fontSize = 16.sp
                 )
             },
@@ -73,7 +76,7 @@ fun ProfileScreen(
                     }
                 ) {
                     Text(
-                        "Sign Out",
+                        stringResource(R.string.profile_sign_out),
                         color = PrimaryPink,
                         fontWeight = FontWeight.Bold
                     )
@@ -84,7 +87,7 @@ fun ProfileScreen(
                     onClick = { showLogoutDialog = false }
                 ) {
                     Text(
-                        "Cancel",
+                        stringResource(R.string.common_cancel),
                         color = Color.Gray
                     )
                 }
@@ -126,7 +129,7 @@ fun ProfileScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Profile",
+                        stringResource(R.string.profile_title),
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center
@@ -134,7 +137,7 @@ fun ProfileScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = { /* Handle back if necessary, but this is a root tab */ }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.biometric_cancel))
                     }
                 },
                 actions = {
@@ -167,7 +170,7 @@ fun ProfileScreen(
                     ) {
                         Image(
                             painter = painterResource(id = currentAvatar.drawableRes),
-                            contentDescription = "Avatar",
+                            contentDescription = stringResource(R.string.profile_title),
                             modifier = Modifier.fillMaxSize().padding(12.dp),
                             contentScale = ContentScale.Fit
                         )
@@ -183,7 +186,7 @@ fun ProfileScreen(
                     ) {
                         Icon(
                             Icons.Default.Edit,
-                            contentDescription = "Edit Profile",
+                            contentDescription = stringResource(R.string.profile_edit_profile),
                             tint = Color.White,
                             modifier = Modifier.size(16.dp)
                         )
@@ -210,7 +213,7 @@ fun ProfileScreen(
     
             // Account Actions
             Text(
-                text = "ACCOUNT ACTIONS",
+                text = stringResource(R.string.profile_account_actions),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Gray,
@@ -221,8 +224,8 @@ fun ProfileScreen(
     
             ActionItem(
                 icon = Icons.Default.WorkOutline,
-                title = "Export to Excel",
-                subtitle = "Download your financial reports",
+                title = stringResource(R.string.profile_export_excel),
+                subtitle = stringResource(R.string.profile_export_subtitle),
                 onClick = {
                     viewModel.exportToExcel(context) { file ->
                         val uri = androidx.core.content.FileProvider.getUriForFile(
@@ -235,33 +238,33 @@ fun ProfileScreen(
                             putExtra(android.content.Intent.EXTRA_STREAM, uri)
                             addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
-                        context.startActivity(android.content.Intent.createChooser(intent, "Share Excel Report"))
+                        context.startActivity(android.content.Intent.createChooser(intent, context.getString(R.string.profile_share_excel)))
                     }
                 }
             )
             ActionItem(
                 icon = Icons.Default.GridView,
-                title = "Categories",
-                subtitle = "Manage your spending categories",
+                title = stringResource(R.string.categories_title),
+                subtitle = stringResource(R.string.profile_manage_categories),
                 onClick = onNavigateToCategories
             )
             ActionItem(
                 icon = Icons.Default.Settings,
-                title = "Account Settings",
-                subtitle = "Security, notifications, and privacy",
+                title = stringResource(R.string.profile_account_settings),
+                subtitle = stringResource(R.string.profile_settings_subtitle),
                 onClick = onNavigateToAccountSettings
             )
             ActionItem(
                 icon = Icons.Default.Logout,
-                title = "Logout",
-                subtitle = "Sign out of your account",
+                title = stringResource(R.string.profile_sign_out),
+                subtitle = stringResource(R.string.profile_logout_subtitle),
                 isDestructive = true,
                 onClick = { showLogoutDialog = true }
             )
     
             Spacer(modifier = Modifier.height(80.dp)) // Padding for bottom nav
         }
-
+ 
         if (uiState.isExporting) {
             Box(
                 modifier = Modifier
@@ -282,7 +285,7 @@ fun ProfileScreen(
                         CircularProgressIndicator(color = PrimaryPink)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            "Exporting Excel file...",
+                            stringResource(R.string.profile_exporting),
                             fontWeight = FontWeight.Medium,
                             fontSize = 16.sp
                         )

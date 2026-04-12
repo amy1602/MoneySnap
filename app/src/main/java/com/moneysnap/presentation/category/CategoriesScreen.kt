@@ -26,6 +26,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.moneysnap.domain.model.Category
 import com.moneysnap.domain.model.CategoryConstants
 import com.moneysnap.presentation.theme.PrimaryPink
+import androidx.compose.ui.res.stringResource
+import com.moneysnap.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,13 +48,13 @@ fun CategoriesScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "Categories",
+                        stringResource(R.string.categories_title),
                         fontWeight = FontWeight.Bold
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.biometric_cancel))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -67,7 +69,7 @@ fun CategoriesScreen(
                 contentColor = Color.White,
                 shape = CircleShape
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Create category")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.categories_title))
             }
         }
     ) { paddingValues ->
@@ -85,7 +87,7 @@ fun CategoriesScreen(
             ) {
                 if (uiState.expenseCategories.isNotEmpty()) {
                     item {
-                        CategorySectionHeader("EXPENSE CATEGORIES")
+                        CategorySectionHeader(stringResource(R.string.categories_expense))
                     }
                     items(
                         items = uiState.expenseCategories,
@@ -105,7 +107,7 @@ fun CategoriesScreen(
                 if (uiState.incomeCategories.isNotEmpty()) {
                     item {
                         Spacer(modifier = Modifier.height(16.dp))
-                        CategorySectionHeader("INCOME CATEGORIES")
+                        CategorySectionHeader(stringResource(R.string.categories_income))
                     }
                     items(
                         items = uiState.incomeCategories,
@@ -128,7 +130,7 @@ fun CategoriesScreen(
                             modifier = Modifier.fillParentMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("No categories found. Create one!", color = Color.Gray)
+                            Text(stringResource(R.string.categories_empty_message), color = Color.Gray)
                         }
                     }
                 }
@@ -141,8 +143,8 @@ fun CategoriesScreen(
                     showDeleteDialog = false
                     categoryToDelete = null
                 },
-                title = { Text("Delete Category") },
-                text = { Text("Are you sure you want to delete \"${categoryToDelete?.name}\"? This action cannot be undone.") },
+                title = { Text(stringResource(R.string.categories_delete_title)) },
+                text = { Text(stringResource(R.string.categories_delete_message, categoryToDelete?.name ?: "")) },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -152,7 +154,7 @@ fun CategoriesScreen(
                         },
                         colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
                     ) {
-                        Text("Delete")
+                        Text(stringResource(R.string.categories_delete_btn))
                     }
                 },
                 dismissButton = {
@@ -160,7 +162,7 @@ fun CategoriesScreen(
                         showDeleteDialog = false
                         categoryToDelete = null
                     }) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.categories_cancel_btn))
                     }
                 },
                 shape = RoundedCornerShape(24.dp),

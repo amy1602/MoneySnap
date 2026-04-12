@@ -21,6 +21,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.moneysnap.domain.model.AvatarConstants
+import androidx.compose.ui.res.stringResource
+import com.moneysnap.R
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,13 +61,13 @@ fun ChangeNameSheet(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Change Name",
+                text = stringResource(R.string.change_name_title),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1A1C1E)
             )
             IconButton(onClick = onDismiss) {
-                Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.Gray)
+                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.biometric_cancel), tint = Color.Gray)
             }
         }
 
@@ -72,7 +75,7 @@ fun ChangeNameSheet(
 
         // Current Profile Section
         Text(
-            text = "CURRENT NAME",
+            text = stringResource(R.string.change_name_current),
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Gray,
@@ -108,7 +111,7 @@ fun ChangeNameSheet(
 
         // New Name Input
         Text(
-            text = "NEW NAME",
+            text = stringResource(R.string.change_name_new),
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             color = FigmaRed,
@@ -125,7 +128,7 @@ fun ChangeNameSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp)),
-            placeholder = { Text("Enter new name", color = Color.Gray) },
+            placeholder = { Text(stringResource(R.string.change_name_hint), color = Color.Gray) },
             trailingIcon = {
                 Icon(Icons.Default.Person, contentDescription = null, tint = Color.Gray)
             },
@@ -145,7 +148,7 @@ fun ChangeNameSheet(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "This name will be visible across your shared accounts and reports.",
+                text = stringResource(R.string.change_name_visibility_notice),
                 fontSize = 12.sp,
                 color = Color.Gray,
                 modifier = Modifier.weight(1f)
@@ -177,7 +180,7 @@ fun ChangeNameSheet(
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = "Profile verification is active. Your official ledger name will be updated instantly.",
+                text = stringResource(R.string.change_name_verification_notice),
                 fontSize = 13.sp,
                 color = FigmaRed,
                 lineHeight = 18.sp
@@ -201,7 +204,7 @@ fun ChangeNameSheet(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "Save Changes",
+                    text = stringResource(R.string.change_name_save),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White

@@ -24,6 +24,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.moneysnap.R
 import kotlinx.coroutines.launch
 
 private val ScreenBg = Color(0xFFF8FAFC)
@@ -46,14 +48,14 @@ fun AccountSettingsScreen(
             onDismissRequest = { showLogoutDialog = false },
             title = {
                 Text(
-                    text = "Sign Out",
+                    text = stringResource(R.string.profile_sign_out),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
             },
             text = {
                 Text(
-                    text = "Are you sure you want to sign out of your account?",
+                    text = stringResource(R.string.profile_sign_out_message),
                     fontSize = 16.sp
                 )
             },
@@ -65,7 +67,7 @@ fun AccountSettingsScreen(
                     }
                 ) {
                     Text(
-                        "Sign Out",
+                        stringResource(R.string.profile_sign_out),
                         color = AccentRed,
                         fontWeight = FontWeight.Bold
                     )
@@ -76,7 +78,7 @@ fun AccountSettingsScreen(
                     onClick = { showLogoutDialog = false }
                 ) {
                     Text(
-                        "Cancel",
+                        stringResource(R.string.common_cancel),
                         color = Color.Gray
                     )
                 }
@@ -105,14 +107,14 @@ fun AccountSettingsScreen(
                     scope.launch {
                         val result = authRepository.updatePassword(oldPass, newPass)
                         if (result.isSuccess) {
-                            android.widget.Toast.makeText(context, "Password updated successfully", android.widget.Toast.LENGTH_SHORT).show()
+                            android.widget.Toast.makeText(context, context.getString(R.string.settings_password_success), android.widget.Toast.LENGTH_SHORT).show()
                             showUpdatePasswordSheet = false
                         } else {
                             val exception = result.exceptionOrNull()
                             val errorMessage = if (exception is com.google.firebase.auth.FirebaseAuthInvalidCredentialsException) {
-                                "Current password is wrong"
+                                context.getString(R.string.settings_password_wrong)
                             } else {
-                                exception?.message ?: "Unknown error occurred"
+                                exception?.message ?: context.getString(R.string.settings_unknown_error)
                             }
                             android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
                         }
@@ -127,7 +129,7 @@ fun AccountSettingsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Account Settings",
+                        stringResource(R.string.profile_account_settings),
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
                         color = TitleDark
@@ -137,7 +139,7 @@ fun AccountSettingsScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.biometric_cancel),
                             tint = TitleDark
                         )
                     }
@@ -157,7 +159,7 @@ fun AccountSettingsScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             // --- SECURITY & ACCESS ---
-            SectionLabel("SECURITY & ACCESS")
+            SectionLabel(stringResource(R.string.settings_security_access))
             Spacer(modifier = Modifier.height(8.dp))
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -169,7 +171,7 @@ fun AccountSettingsScreen(
                     icon = Icons.Default.Lock,
                     iconBgColor = AccentRed.copy(alpha = 0.1f),
                     iconTint = AccentRed,
-                    title = "Change Password",
+                    title = stringResource(R.string.settings_change_password),
                     titleColor = AccentRed,
                     subtitle = null,
                     showChevron = true,
@@ -184,9 +186,9 @@ fun AccountSettingsScreen(
                     icon = Icons.Default.Fingerprint,
                     iconBgColor = Color(0xFFE8EDF2),
                     iconTint = Color(0xFF475569),
-                    title = "Biometric Authentication",
+                    title = stringResource(R.string.settings_biometric),
                     titleColor = TitleDark,
-                    subtitle = "Touch ID or Face ID",
+                    subtitle = stringResource(R.string.settings_biometric_subtitle),
                     showChevron = true,
                     onClick = onNavigateToBiometric
                 )
@@ -195,7 +197,7 @@ fun AccountSettingsScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // --- PREFERENCES ---
-            SectionLabel("PREFERENCES")
+            SectionLabel(stringResource(R.string.settings_preferences))
             Spacer(modifier = Modifier.height(8.dp))
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -207,9 +209,9 @@ fun AccountSettingsScreen(
                     icon = Icons.Default.Language,
                     iconBgColor = Color(0xFFE8EDF2),
                     iconTint = Color(0xFF475569),
-                    title = "Language",
+                    title = stringResource(R.string.settings_preferences),
                     titleColor = TitleDark,
-                    subtitle = "English (United States)",
+                    subtitle = stringResource(R.string.settings_language_subtitle),
                     showChevron = true,
                     onClick = onNavigateToLanguage
                 )
@@ -218,7 +220,7 @@ fun AccountSettingsScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // --- ACCOUNT ACTIONS ---
-            SectionLabel("ACCOUNT ACTIONS")
+            SectionLabel(stringResource(R.string.profile_account_actions))
             Spacer(modifier = Modifier.height(8.dp))
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -230,7 +232,7 @@ fun AccountSettingsScreen(
                     icon = Icons.AutoMirrored.Filled.ExitToApp,
                     iconBgColor = AccentRed.copy(alpha = 0.1f),
                     iconTint = AccentRed,
-                    title = "Sign Out",
+                    title = stringResource(R.string.profile_sign_out),
                     titleColor = AccentRed,
                     subtitle = null,
                     showChevron = false,

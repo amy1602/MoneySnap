@@ -24,6 +24,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.moneysnap.R
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,13 +84,13 @@ fun UpdatePasswordSheet(
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text(
-                        text = "Update Password",
+                        text = stringResource(R.string.update_password_title),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1A1C1E)
                     )
                     Text(
-                        text = "Keep your account protected",
+                        text = stringResource(R.string.update_password_subtitle),
                         fontSize = 13.sp,
                         color = Color.Gray
                     )
@@ -95,7 +98,7 @@ fun UpdatePasswordSheet(
             }
             
             IconButton(onClick = onDismiss) {
-                Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.Gray)
+                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.biometric_cancel), tint = Color.Gray)
             }
         }
 
@@ -103,7 +106,7 @@ fun UpdatePasswordSheet(
 
         // Current Password
         Text(
-            text = "CURRENT PASSWORD",
+            text = stringResource(R.string.update_password_current),
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Gray,
@@ -122,7 +125,7 @@ fun UpdatePasswordSheet(
 
         // New Password
         Text(
-            text = "NEW PASSWORD",
+            text = stringResource(R.string.update_password_new),
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Gray,
@@ -132,7 +135,7 @@ fun UpdatePasswordSheet(
         PasswordField(
             value = newPassword,
             onValueChange = { newPassword = it },
-            placeholder = "Minimum 8 characters",
+            placeholder = stringResource(R.string.update_password_min_chars),
             isVisible = newPasswordVisible,
             onVisibilityToggle = { newPasswordVisible = !newPasswordVisible }
         )
@@ -141,7 +144,7 @@ fun UpdatePasswordSheet(
 
         // Confirm Password
         Text(
-            text = "CONFIRM NEW PASSWORD",
+            text = stringResource(R.string.update_password_confirm),
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Gray,
@@ -151,7 +154,7 @@ fun UpdatePasswordSheet(
         PasswordField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
-            placeholder = "Must match new password",
+            placeholder = stringResource(R.string.update_password_match_hint),
             isVisible = confirmPasswordVisible,
             onVisibilityToggle = { confirmPasswordVisible = !confirmPasswordVisible }
         )
@@ -175,7 +178,7 @@ fun UpdatePasswordSheet(
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = "Use at least 8 characters with a mix of letters, numbers, and symbols to ensure maximum security for your money manager.",
+                text = stringResource(R.string.update_password_security_notice),
                 fontSize = 12.sp,
                 color = Color.DarkGray,
                 lineHeight = 18.sp
@@ -188,11 +191,11 @@ fun UpdatePasswordSheet(
         Button(
             onClick = { 
                 if (currentPassword.isBlank()) {
-                    android.widget.Toast.makeText(context, "Please enter your current password", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(context, context.getString(R.string.update_password_enter_current), android.widget.Toast.LENGTH_SHORT).show()
                 } else if (newPassword.length < 8) {
-                    android.widget.Toast.makeText(context, "New password must be at least 8 characters", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(context, context.getString(R.string.update_password_min_error), android.widget.Toast.LENGTH_SHORT).show()
                 } else if (newPassword != confirmPassword) {
-                    android.widget.Toast.makeText(context, "Passwords do not match", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(context, context.getString(R.string.update_password_match_error), android.widget.Toast.LENGTH_SHORT).show()
                 } else {
                     onUpdatePassword(currentPassword, newPassword)
                 }
@@ -208,7 +211,7 @@ fun UpdatePasswordSheet(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "Update Password",
+                    text = stringResource(R.string.update_password_title),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -247,7 +250,7 @@ private fun PasswordField(
             IconButton(onClick = onVisibilityToggle) {
                 Icon(
                     imageVector = if (isVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                    contentDescription = "Toggle password visibility",
+                    contentDescription = stringResource(R.string.login_password_hint),
                     tint = Color.Gray
                 )
             }

@@ -27,6 +27,8 @@ import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.ui.res.stringResource
+import com.moneysnap.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,9 +80,9 @@ fun TransactionDetailScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 IconButton(onClick = onBackClick) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.biometric_cancel))
                 }
-                Text("Transaction details", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.transaction_detail_title), fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.width(48.dp)) // balance layout
             }
         }
@@ -97,7 +99,7 @@ fun TransactionDetailScreen(
             val formatter = NumberFormat.getCurrencyInstance(Locale.US)
             val displayAmount = if (isExpense) "-${formatter.format(transaction.amount)}" else "+${formatter.format(transaction.amount)}"
             val amountColor = if (isExpense) MaterialTheme.colorScheme.onBackground else Color(0xFF4CAF50)
-
+ 
             val parsedColor = try {
                 Color(android.graphics.Color.parseColor(if (category?.color?.startsWith("#") == true) category.color else "#${category?.color ?: "FF2A65"}"))
             } catch (e: Exception) {
@@ -131,7 +133,7 @@ fun TransactionDetailScreen(
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 Text(
-                    text = category?.name ?: "Unknown Category",
+                    text = category?.name ?: stringResource(R.string.transaction_detail_unknown_category),
                     fontSize = 18.sp,
                     color = Color.Gray
                 )
@@ -155,11 +157,11 @@ fun TransactionDetailScreen(
                         .background(Color(0xFFF5F5F5))
                         .padding(24.dp)
                 ) {
-                    DetailRow("Date", SimpleDateFormat("MMM dd, yyyy  •  HH:mm a", Locale.US).format(Date(transaction.date)))
+                    DetailRow(stringResource(R.string.transaction_detail_date), SimpleDateFormat("MMM dd, yyyy  •  HH:mm a", Locale.US).format(Date(transaction.date)))
                     Spacer(modifier = Modifier.height(16.dp))
-                    DetailRow("Type", if (isExpense) "Expense" else "Income")
+                    DetailRow(stringResource(R.string.transaction_detail_type), if (isExpense) stringResource(R.string.common_expense) else stringResource(R.string.common_income))
                     Spacer(modifier = Modifier.height(16.dp))
-                    DetailRow("Notes", transaction.note.ifBlank { "None" })
+                    DetailRow(stringResource(R.string.transaction_detail_notes), transaction.note.ifBlank { stringResource(R.string.transaction_detail_none) })
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -177,7 +179,7 @@ fun TransactionDetailScreen(
                     ) {
                         Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Delete", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.common_delete), fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
 
                     Button(
@@ -188,7 +190,7 @@ fun TransactionDetailScreen(
                     ) {
                         Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Edit", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.transaction_detail_edit), fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 
@@ -200,8 +202,8 @@ fun TransactionDetailScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Transaction") },
-            text = { Text("Are you sure you want to delete this transaction? This action cannot be undone.") },
+            title = { Text(stringResource(R.string.history_delete_title)) },
+            text = { Text(stringResource(R.string.history_delete_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -210,12 +212,12 @@ fun TransactionDetailScreen(
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.common_delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.common_cancel))
                 }
             },
             shape = RoundedCornerShape(24.dp),

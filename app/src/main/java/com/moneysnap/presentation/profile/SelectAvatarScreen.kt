@@ -28,8 +28,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.moneysnap.domain.model.AvatarConstants
 import com.moneysnap.domain.model.AvatarOption
+import androidx.compose.ui.res.stringResource
+import com.moneysnap.R
 
 val FigmaRed = androidx.compose.ui.graphics.Color(0xFFE55061)
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +48,7 @@ fun SelectAvatarScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        text = "Select Avatar", 
+                        text = stringResource(R.string.select_avatar_title),
                         fontWeight = FontWeight.Bold, 
                         fontSize = 20.sp,
                         color = Color(0xFF333333),
@@ -55,7 +58,7 @@ fun SelectAvatarScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = FigmaRed)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.biometric_cancel), tint = FigmaRed)
                     }
                 },
                 actions = {
@@ -83,7 +86,7 @@ fun SelectAvatarScreen(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("SAVE CHANGES", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(stringResource(R.string.change_name_save).uppercase(), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
                     }
@@ -101,7 +104,7 @@ fun SelectAvatarScreen(
             // Intro text section
             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp)) {
                 Text(
-                    text = "DEFAULT COLLECTION",
+                    text = stringResource(R.string.select_avatar_collection),
                     color = FigmaRed,
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp,
@@ -109,7 +112,7 @@ fun SelectAvatarScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Choose a fluffy feline companion that represents your personality on the ledger.",
+                    text = stringResource(R.string.select_avatar_subtitle),
                     color = Color.Gray,
                     fontSize = 14.sp,
                     lineHeight = 20.sp

@@ -1,6 +1,6 @@
 package com.moneysnap.presentation.profile
 
-import android.widget.Toast
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.moneysnap.data.local.LanguagePreferences
 
+import com.moneysnap.LocaleChangeCallback
+
 private val ScreenBg = Color(0xFFF8FAFC)
 private val AccentRed = Color(0xFFE55061)
 private val TitleDark = Color(0xFF1A1C1E)
@@ -38,7 +40,7 @@ data class LanguageItem(
 )
 
 private val languages = listOf(
-    LanguageItem("en", "English (US)", "Default System Language", "🇺🇸"),
+    LanguageItem("en", "English (US)", "App Default", "🇺🇸"),
     LanguageItem("zh", "中文", "Chinese", "🇨🇳"),
     LanguageItem("vi", "Tiếng Việt", "Vietnamese", "🇻🇳")
 )
@@ -51,6 +53,7 @@ fun SelectLanguageScreen(
     val context = LocalContext.current
     val languagePrefs = remember { LanguagePreferences(context) }
     var selectedCode by remember { mutableStateOf(languagePrefs.selectedLanguage) }
+    val onLocaleChange = LocaleChangeCallback.current
 
     Scaffold(
         topBar = {
@@ -124,13 +127,11 @@ fun SelectLanguageScreen(
                     language = lang,
                     isSelected = isSelected,
                     onClick = {
-                        selectedCode = lang.code
-                        languagePrefs.selectedLanguage = lang.code
-                        Toast.makeText(
-                            context,
-                            "Language changed to ${lang.name}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        if (lang.code != selectedCode) {
+                            selectedCode = lang.code
+                            languagePrefs.selectedLanguage = lang.code
+                            onLocaleChange()
+                        }
                     }
                 )
                 Spacer(modifier = Modifier.height(12.dp))

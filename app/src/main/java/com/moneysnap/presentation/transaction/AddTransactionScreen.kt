@@ -36,6 +36,8 @@ import com.moneysnap.domain.model.TransactionType
 import com.moneysnap.presentation.theme.PrimaryPink
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.ui.res.stringResource
+import com.moneysnap.R
 
 class PrefixTransformation(private val prefix: String) : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
@@ -56,6 +58,7 @@ class PrefixTransformation(private val prefix: String) : VisualTransformation {
         return TransformedText(AnnotatedString(out), numberOffsetTranslator)
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,13 +118,13 @@ fun AddTransactionScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                if (transactionId == null) "Add Transaction" else "Edit Transaction",
+                if (transactionId == null) stringResource(R.string.add_transaction_title) else stringResource(R.string.edit_transaction_title),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
             IconButton(onClick = onCloseClick) {
-                Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.Gray)
+                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.biometric_cancel), tint = Color.Gray)
             }
         }
 
@@ -136,13 +139,13 @@ fun AddTransactionScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             TransactionTypeButton(
-                text = "Expense",
+                text = stringResource(R.string.common_expense),
                 isSelected = state.type == TransactionType.EXPENSE,
                 onClick = { viewModel.onTypeChange(TransactionType.EXPENSE) },
                 modifier = Modifier.weight(1f)
             )
             TransactionTypeButton(
-                text = "Income",
+                text = stringResource(R.string.common_income),
                 isSelected = state.type == TransactionType.INCOME,
                 onClick = { viewModel.onTypeChange(TransactionType.INCOME) },
                 modifier = Modifier.weight(1f)
@@ -157,7 +160,7 @@ fun AddTransactionScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "ENTER AMOUNT",
+                stringResource(R.string.add_transaction_enter_amount),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Gray,
@@ -191,7 +194,7 @@ fun AddTransactionScreen(
         // Input Fields
         ModalInputField(
             icon = Icons.Default.Category,
-            placeholder = state.categoryName,
+            placeholder = if (state.categoryName == "Select category") stringResource(R.string.add_transaction_select_category) else state.categoryName,
             onClick = { showCategoryPicker = true }
         )
         
@@ -209,7 +212,7 @@ fun AddTransactionScreen(
         OutlinedTextField(
             value = state.note,
             onValueChange = { viewModel.onNoteChange(it) },
-            placeholder = { Text("What was this for?", color = Color.Gray) },
+            placeholder = { Text(stringResource(R.string.add_transaction_note_hint), color = Color.Gray) },
             leadingIcon = { Icon(Icons.Default.Notes, contentDescription = null, tint = Color.Gray) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -243,7 +246,7 @@ fun AddTransactionScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(24.dp))
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(if (transactionId == null) "Save Transaction" else "Update Transaction", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(if (transactionId == null) stringResource(R.string.add_transaction_save) else stringResource(R.string.add_transaction_update), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -255,7 +258,7 @@ fun AddTransactionScreen(
             onClick = onCloseClick,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            Text("Cancel", color = Color.Gray, fontSize = 16.sp)
+            Text(stringResource(R.string.common_cancel), color = Color.Gray, fontSize = 16.sp)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -283,12 +286,12 @@ fun AddTransactionScreen(
                         datePickerState.selectedDateMillis?.let { viewModel.onDateChange(it) }
                         showDatePicker = false
                     }) {
-                        Text("OK")
+                        Text(stringResource(R.string.common_ok))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDatePicker = false }) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.common_cancel))
                     }
                 }
             ) {
@@ -320,13 +323,13 @@ fun CategoryPicker(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "Select Category",
+                    stringResource(R.string.add_transaction_select_category),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
                 IconButton(onClick = onDismiss) {
-                    Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.Gray)
+                    Icon(Icons.Default.Close, contentDescription = stringResource(R.string.biometric_cancel), tint = Color.Gray)
                 }
             }
 
@@ -334,7 +337,7 @@ fun CategoryPicker(
 
             if (categories.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No categories found", color = Color.Gray)
+                    Text(stringResource(R.string.add_transaction_no_categories), color = Color.Gray)
                 }
             } else {
                 androidx.compose.foundation.lazy.LazyColumn(
@@ -434,7 +437,7 @@ fun ModalInputField(
             Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = placeholder,
-                color = if (placeholder == "Select category") Color.Gray else Color.Black,
+                color = if (placeholder == stringResource(R.string.add_transaction_select_category)) Color.Gray else Color.Black,
                 fontSize = 16.sp,
                 modifier = Modifier.weight(1f)
             )
